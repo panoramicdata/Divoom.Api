@@ -157,14 +157,9 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
-# Main WIX Installer
-PanoramicData.ReportMagic.Setup/WixInstaller*.wxs
-PanoramicData.ReportMagic.Web/Content/*.msi
-
 appsettings.json
 launchSettings.json
 .vs/
 *.zip
 .idea/
-/ReportMagic.Web.Api/appsettings.Development.json
 GeneratedBinaries
