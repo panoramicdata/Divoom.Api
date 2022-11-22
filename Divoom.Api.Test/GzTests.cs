@@ -49,10 +49,25 @@ public class GzTests : Test
 		response.ReturnCode.Should().Be(0);
 		response.Fonts.Should().NotBeEmpty();
 	}
+
 	[Fact]
 	public async void GetImagesAsync_Succeeds()
 	{
 		var response = await Client.Gz.GetImagesAsync(new GetImagesRequest
+		{
+			DeviceId = Client.Options.DeviceId,
+			DeviceMac = Client.Options.DeviceMac
+		}, default);
+		response.Should().NotBeNull();
+		response.ReturnCode.Should().Be(0);
+		response.DeviceId.Should().NotBe(0);
+		response.Images.Should().NotBeNull();
+	}
+
+	[Fact]
+	public async void GetLikedImagesAsync_Succeeds()
+	{
+		var response = await Client.Gz.GetLikedImagesAsync(new GetImagesRequest
 		{
 			DeviceId = Client.Options.DeviceId,
 			DeviceMac = Client.Options.DeviceMac

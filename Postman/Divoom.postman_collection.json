@@ -1,0 +1,1241 @@
+{
+	"info": {
+		"_postman_id": "a843a6dd-140c-4ef2-a3c5-579e74f68c75",
+		"name": "Divoom",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "679045"
+	},
+	"item": [
+		{
+			"name": "Basic",
+			"item": [
+				{
+					"name": "Find Device",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://app.divoom-gz.com/Device/ReturnSameLANDevice",
+							"protocol": "https",
+							"host": [
+								"app",
+								"divoom-gz",
+								"com"
+							],
+							"path": [
+								"Device",
+								"ReturnSameLANDevice"
+							]
+						},
+						"description": "StartFragment\n\n- get the device list in local network.\n    \n\nEndFragment"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dial Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://app.divoom-gz.com/Channel/GetDialType",
+							"protocol": "https",
+							"host": [
+								"app",
+								"divoom-gz",
+								"com"
+							],
+							"path": [
+								"Channel",
+								"GetDialType"
+							]
+						},
+						"description": "Gets a list of supported Dial Types from the central server"
+					},
+					"response": []
+				},
+				{
+					"name": "GetTimeDialFontList",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://app.divoom-gz.com/Device/GetTimeDialFontList",
+							"protocol": "https",
+							"host": [
+								"app",
+								"divoom-gz",
+								"com"
+							],
+							"path": [
+								"Device",
+								"GetTimeDialFontList"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dial List",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n \"DialType\":\"Social\",\r\n \"Page\":1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://app.divoom-gz.com/Channel/GetDialList",
+							"protocol": "https",
+							"host": [
+								"app",
+								"divoom-gz",
+								"com"
+							],
+							"path": [
+								"Channel",
+								"GetDialList"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetImgUploadList",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"DeviceId\": {{divoom_device_id}},\r\n    \"DeviceMac\": \"{{divoom_device_mac}}\",\r\n    \"Page\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://app.divoom-gz.com/Device/GetImgUploadList",
+							"protocol": "https",
+							"host": [
+								"app",
+								"divoom-gz",
+								"com"
+							],
+							"path": [
+								"Device",
+								"GetImgUploadList"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetMyImgLikeList",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"DeviceId\": {{divoom_device_id}},\r\n    \"DeviceMac\": \"{{divoom_device_mac}}\",\r\n    \"Page\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://app.divoom-gz.com/Device/GetImgUploadList",
+							"protocol": "https",
+							"host": [
+								"app",
+								"divoom-gz",
+								"com"
+							],
+							"path": [
+								"Device",
+								"GetImgUploadList"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Channel Control",
+			"item": [
+				{
+					"name": "SetClockSelectId",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "  {\r\n    \"Command\": \"Channel/SetClockSelectId\",\r\n    \"ClockId\": 0\r\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetClockInfo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/GetClockInfo\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetIndex",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/SetIndex\",\r\n    \"SelectIndex\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetCustomPageIndex",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/SetCustomPageIndex\",\r\n    \"SelectIndex\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetEqPosition",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/SetEqPosition\",\r\n    \"SelectIndex\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CloudIndex",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/CloudIndex\",\r\n    \"Index\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetIndex",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/GetIndex\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "System Setting",
+			"item": [
+				{
+					"name": "Channel/SetBrightness",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/SetBrightness\",\r\n    \"Brightness\": 100\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Channel/GetAllConf",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/GetAllConf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sys/WeatherAreaSetting",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Sys/LogAndLat\",\r\n    \"Longitude\": \"30.29\",\r\n    \"Latitude\": \"20.58\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sys/TimeZone",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Sys/TimeZone\",\r\n    \"TimeZoneValue\": \"GMT+0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/SetUTC",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/SetUTC\",\r\n    \"Utc\": 1669057581\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/GetDeviceTime",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/GetDeviceTime\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Channel/OnOffScreen",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Channel/OnOffScreen\",\r\n    \"OnOff\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/SetDisTempMode",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/SetDisTempMode\",\r\n    \"Mode\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/SetScreenRotationAngle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/SetScreenRotationAngle\",\r\n    \"Mode\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/SetMirrorMode",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/SetMirrorMode\",\r\n    \"Mode\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/SetTime24Flag",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/SetTime24Flag\",\r\n    \"Mode\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/SetHighLightMode",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/SetHighLightMode\",\r\n    \"Mode\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/SetWhiteBalance",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/SetWhiteBalance\",\r\n    \"RValue\":100,\r\n    \"GValue\":100,\r\n    \"BValue\":100\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Device/GetWeatherInfo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/GetWeatherInfo\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tools",
+			"item": [
+				{
+					"name": "SetNoiseStatus",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Tools/SetNoiseStatus\",\r\n    \"NoiseStatus\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetTimer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Tools/SetTimer\",\r\n    \"Minute\": 0,\r\n    \"Second\": 10,\r\n    \"Status\": 1 \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetStopWatch",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Tools/SetStopWatch\",\r\n    \"Status\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SetScoreBoard",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Tools/SetScoreBoard\",\r\n    \"BlueScore\": 132, \r\n    \"RedScore\": 84\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PlayBuzzer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/PlayBuzzer\",\r\n    \"ActiveTimeInCycle\":1000,\r\n    \"OffTimeInCycle\":500,\r\n    \"PlayTotalTime\":3000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Animation",
+			"item": [
+				{
+					"name": "PlayGif (Web)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/PlayTFGif\",\r\n    \"FileType\": 2, \r\n    \"FileName\": \"http://f.divoom-gz.com/64_64.gif\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PlayGif (File)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/PlayTFGif\",\r\n    \"FileType\": 0, \r\n    \"FileName\": \"divoom_gif/1.gif\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PlayGif (Folder)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Device/PlayTFGif\",\r\n    \"FileType\": 1, \r\n    \"FileName\": \"divoom_gif\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SendHttpText",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Draw/SendHttpText\",\r\n    \"TextId\":4,\r\n    \"x\":0,\r\n    \"y\":40,\r\n    \"dir\":0,\r\n    \"font\":4,\r\n    \"TextWidth\":56,\r\n    \"speed\":10,\r\n    \"TextString\":\"hello, Divoom\",\r\n    \"color\":\"#FFFF00\",\r\n    \"align\":1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ClearHttpText",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Draw/ClearHttpText\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SendRemote",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\": \"Draw/SendRemote\",\r\n    \"FileId\": \"group1/M00/AB/B7/eEwpPV_9bSKEYUPSAAAAADy3Q801470760\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CommandList",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\":\"Draw/CommandList\",\r\n    \"CommandList\":[\r\n        {\r\n            \"Command\":\"Device/PlayTFGif\",\r\n            \"FileType\":2,\r\n            \"FileName\":\"http://f.divoom-gz.com/64_64.gif\"\r\n        },\r\n        {\r\n            \"Command\":\"Channel/SetBrightness\",\r\n            \"Brightness\":100\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UseHTTPCommandSource",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\":\"Draw/UseHTTPCommandSource\",\r\n    \"CommandUrl\": \"http://f.divoom-gz.com/all_command.txt\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						},
+						"description": "StartFragment\n\n- get the device list in local network.\n    \n\nEndFragmen"
+					},
+					"response": []
+				},
+				{
+					"name": "SendHttpItemList",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Command\":\"Draw/SendHttpItemList\",\r\n    \"ItemList\":[\r\n            {\r\n            \"TextId\":5,\r\n            \"type\":6,\r\n            \"x\":32,\r\n            \"y\":32,\r\n            \"dir\":0,\r\n            \"font\":18,\r\n            \"TextWidth\":32,\r\n            \"Textheight\":16,\r\n            \"speed\":100,\r\n            \"align\":1,\r\n            \"color\":\"#FF0000\"\r\n            },\r\n            {\r\n            \"TextId\":1,\r\n            \"type\":14,\r\n            \"x\":0,\r\n            \"y\":0,\r\n            \"dir\":0,\r\n            \"font\":18,\r\n            \"TextWidth\":32,\r\n            \"Textheight\":16,\r\n            \"speed\":100,\r\n            \"align\":1,\r\n            \"color\":\"#FF0000\"\r\n            },\r\n            {\r\n            \"TextId\":2,\r\n            \"type\":22,\r\n            \"x\":16,\r\n            \"y\":16,\r\n            \"dir\":0,\r\n            \"font\":2,\r\n            \"TextWidth\":48,\r\n            \"Textheight\":16,\r\n            \"speed\":100,\r\n            \"align\":1,\r\n            \"TextString\":\"hello, divoom\",\r\n            \"color\":\"#FFFFFF\"\r\n            },\r\n            {\r\n            \"TextId\":20,\r\n            \"type\":23,\r\n            \"x\":0,\r\n            \"y\":48,\r\n            \"dir\":0,\r\n            \"font\":4,\r\n            \"TextWidth\":64,\r\n            \"Textheight\":16,\r\n            \"speed\":100,\r\n            \"update_time\":60,\r\n            \"align\":1,\r\n            \"TextString\":\"http://appin.divoom-gz.com/Device/ReturnCurrentDate?test=0\",\r\n            \"color\":\"#FFF000\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://192.168.1.165/post",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"165"
+							],
+							"path": [
+								"post"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

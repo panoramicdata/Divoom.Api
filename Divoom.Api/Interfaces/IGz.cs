@@ -58,4 +58,14 @@ public interface IGz
 	Task<GetImagesResponse> GetImagesAsync(
 		[Body] GetImagesRequest request,
 		CancellationToken cancellationToken);
+
+	/// <summary>
+	/// Gets a list of dials for a particular channel
+	/// </summary>
+	/// <param name="value"></param>
+	/// <returns></returns>
+	[Post("/Device/GetImgLikeList")]
+	Task<GetImagesResponse> GetLikedImagesAsync(
+		[Body] GetImagesRequest request,
+		CancellationToken cancellationToken);
 }

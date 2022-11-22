@@ -12,6 +12,11 @@ public class DivoomClientOptions
 	public int DeviceId { get; set; }
 
 	/// <summary>
+	/// The IP address of a local device
+	/// </summary>
+	public string DeviceIp { get; set; } = string.Empty;
+
+	/// <summary>
 	/// The mac of a local device in the form 01234567890A
 	/// </summary>
 	public string DeviceMac { get; set; } = string.Empty;
