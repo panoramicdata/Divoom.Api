@@ -163,3 +163,4 @@ launchSettings.json
 *.zip
 .idea/
 GeneratedBinaries
+./Divoom.Api.Test/appsettings.json
