@@ -143,3 +143,7 @@ csharp_style_prefer_local_over_anonymous_function = true:suggestion
 #dotnet_naming_style.constant_field_style.required_prefix = _ NOPE.
 
 # TODO: Fields that are public static readonly must be PascalCase
+# VSSPELL: Spell checker settings from Divoom.Api.sln.vsspell
+vsspell_section_id = 38c9c4abdba34ed78fa87dc2efaa45af
+vsspell_ignored_words_38c9c4abdba34ed78fa87dc2efaa45af = File:Divoom.Api.sln.vsspell.dic
+

@@ -1,4 +1,5 @@
-﻿using Divoom.Api.Interfaces;
+﻿using Divoom.Api.Implementations;
+using Divoom.Api.Interfaces;
 using Microsoft.Extensions.Logging;
 using Refit;
 using System;
@@ -46,11 +47,15 @@ public class DivoomClient : IDisposable
 		Gz = RestService.For<IGz>(_httpClient, _refitSettings);
 
 		Channel = RestService.For<IChannel>(_localHttpClient, _refitSettings);
+
+		Bluetooth = new BluetoothManager();
 	}
 
 	public IGz Gz { get; }
 
 	public IChannel Channel { get; }
+
+	public IBluetooth Bluetooth { get; }
 
 	protected virtual void Dispose(bool disposing)
 	{
