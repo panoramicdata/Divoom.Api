@@ -1,8 +1,7 @@
-﻿namespace Divoom.Api.Models
+﻿namespace Divoom.Api.Models;
+
+public enum TemperatureUnit
 {
-	public enum TemperatureUnit
-	{
-		Celsius = 0x00,
-		Farenheit = 0x01
-	}
+	Celsius = 0x00,
+	Farenheit = 0x01
 }

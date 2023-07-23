@@ -1,0 +1,21 @@
+﻿namespace Divoom.Api.Models;
+
+public enum VjEffectType
+{
+	Grid = 0x00,
+	Dot = 0x01,
+	VerticalGrid = 0x02,
+	Ban = 0x03,
+	Fan = 0x04,
+	Flower = 0x05,
+	Map = 0x06,
+	River = 0x07,
+	Wave = 0x08,
+	Graph = 0x09,
+	Swan = 0x0a,
+	Flappy = 0x0b,
+	Diamond = 0x0c,
+	Dancer = 0x0d,
+	Diagonal = 0x0e,
+	ZigZag = 0x0f,
+}

@@ -1,7 +1,6 @@
-﻿namespace Divoom.Api.Interfaces
+﻿namespace Divoom.Api.Interfaces;
+
+internal interface ICommand
 {
-	internal interface ICommand
-	{
-		string Command { get; }
-	}
+	string Command { get; }
 }

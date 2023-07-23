@@ -2,60 +2,74 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Divoom.Api.Interfaces
+namespace Divoom.Api.Interfaces;
+
+public interface IBluetooth
 {
-	public interface IBluetooth
-	{
-		List<DivoomBluetoothDevice> GetDevices();
+	List<DivoomBluetoothDevice> GetDevices();
 
-		byte[] ReadBytes(
-			DivoomBluetoothDevice device);
+	Task<DeviceResponse> SetBrightnessAsync(
+		DivoomBluetoothDevice device,
+		int percent,
+		CancellationToken cancellationToken);
 
-		void SetBrightness(
-			DivoomBluetoothDevice device,
-			int percent);
+	Task<DeviceResponse> ViewTimeAsync(
+		DivoomBluetoothDevice device,
+		TimeType timeType,
+		ClockType clockType,
+		bool showTime,
+		bool showWeather,
+		bool showTemperature,
+		bool showCalendar,
+		Color color,
+		CancellationToken cancellationToken);
 
-		void ViewTime(
-			DivoomBluetoothDevice device,
-			TimeType timeType,
-			ClockType clockType,
-			bool showTime,
-			bool showWeather,
-			bool showTemperature,
-			bool showCalendar,
-			Color color);
+	Task<DeviceResponse> SetDateTimeAsync(
+		DivoomBluetoothDevice device,
+		DateTime dateTime,
+		CancellationToken cancellationToken);
 
-		void SetDateTime(
-			DivoomBluetoothDevice device,
-			DateTime dateTime);
+	Task<DeviceResponse> SetTemperatureAndWeatherAsync(
+		DivoomBluetoothDevice device,
+		int temperature,
+		WeatherType thunderstorm,
+		CancellationToken cancellationToken);
 
-		void SetTemperatureAndWeather(
-			DivoomBluetoothDevice device,
-			int temperature,
-			WeatherType thunderstorm);
+	Task<DeviceResponse> ViewWeatherAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
 
-		void ViewWeather(DivoomBluetoothDevice device);
+	Task<DeviceResponse> ViewCloudChannelAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
 
-		void ViewCloudChannel(DivoomBluetoothDevice device);
+	Task<DeviceResponse> ViewVjEffectAsync(
+		DivoomBluetoothDevice device,
+		VjEffectType vjEffectType,
+		CancellationToken cancellationToken);
 
-		void ViewVjEffects(DivoomBluetoothDevice device);
+	Task<DeviceResponse> ViewVisualizationAsync(
+		DivoomBluetoothDevice device,
+		VisualizationType visualizationType,
+		CancellationToken cancellationToken);
 
-		void ViewVisualization(
-			DivoomBluetoothDevice device,
-			VisualizationType visualizationType);
+	Task<DeviceResponse> ViewAnimationAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
 
-		void ViewAnimation(DivoomBluetoothDevice device);
+	Task<DeviceResponse> ViewLightningAsync(
+		DivoomBluetoothDevice device,
+		Color color,
+		int brightnessPercent,
+		LightningType lightningType,
+		CancellationToken cancellationToken);
 
-		void ViewLightning(
-			DivoomBluetoothDevice device,
-			Color color,
-			int brightnessPercent,
-			LightningType lightningType);
-
-		void ViewScoreboard(
-			DivoomBluetoothDevice device,
-			int redScore,
-			int blueScore);
-	}
+	Task<DeviceResponse> ViewScoreboardAsync(
+		DivoomBluetoothDevice device,
+		int redScore,
+		int blueScore,
+		CancellationToken cancellationToken);
 }
