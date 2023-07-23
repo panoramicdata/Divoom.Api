@@ -72,4 +72,8 @@ public interface IBluetooth
 		int redScore,
 		int blueScore,
 		CancellationToken cancellationToken);
+
+	Task<DeviceSettings> GetSettingsAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
 }

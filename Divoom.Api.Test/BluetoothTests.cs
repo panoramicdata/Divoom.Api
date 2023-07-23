@@ -107,7 +107,18 @@ public class BluetoothTests : Test
 	public async void ViewWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewWeatherAsync(device, default);
+
+		var deviceResponse = await Client.Bluetooth.SetTemperatureAndWeatherAsync(device, -1, WeatherType.Thunderstorm, default);
+
+		deviceResponse = await Client.Bluetooth.ViewWeatherAsync(device, default);
+	}
+
+	[Fact]
+	public async void GetSettings_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		var deviceResponse = await Client.Bluetooth.GetSettingsAsync(device, default);
 	}
 
 	[Fact]

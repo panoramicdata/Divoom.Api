@@ -356,4 +356,16 @@ internal class BluetoothManager : IBluetooth
 
 		return stream;
 	}
+
+	public async Task<DeviceSettings> GetSettingsAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken)
+	{
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.GetSettings);
+
+		var deviceResponse = await SendCommandAsync(device, commandBuilder, cancellationToken);
+
+		return new DeviceSettings(deviceResponse);
+	}
 }
