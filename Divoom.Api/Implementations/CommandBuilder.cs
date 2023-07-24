@@ -11,6 +11,8 @@ internal class CommandBuilder
 
 	public byte[] GetBytes()
 	{
+		var checksum = _checksum;
+
 		var byteList = new List<byte>
 		{
 			// Start byte
@@ -21,17 +23,17 @@ internal class CommandBuilder
 		var length = _count + 2;
 		var byte1 = Convert.ToByte(length & 0xFF);
 		byteList.Add(byte1);
-		_checksum += byte1;
+		checksum += byte1;
 		var byte2 = Convert.ToByte((length >> 8) & 0xFF);
 		byteList.Add(byte2);
-		_checksum += byte2;
+		checksum += byte2;
 
 		// Add the payload
 		byteList.AddRange(_bytes);
 
 		// Add two bytes, representing the length of the command
-		byteList.Add(Convert.ToByte(_checksum & 0xFF));
-		byteList.Add(Convert.ToByte((_checksum >> 8) & 0xFF));
+		byteList.Add(Convert.ToByte(checksum & 0xFF));
+		byteList.Add(Convert.ToByte((checksum >> 8) & 0xFF));
 
 		// Add the end byte
 		byteList.Add(0x02);
@@ -43,17 +45,24 @@ internal class CommandBuilder
 	{
 		_count++;
 		_checksum += @byte;
-		//// 0x01, 0x02 or 0x03?
-		//if (@byte == 0x01 || @byte == 0x02 || @byte == 0x03)
-		//{
-		//	// Yes, escape it
-		//	_bytes.Add(0x03);
-		//	_bytes.Add(Convert.ToByte(@byte + 0x03));
-		//	//_count++;
-		//	//_checksum += 0x03;
-		//	return;
-		//}
+		_bytes.Add(@byte);
+	}
 
+	public void AddWithEscaping(byte @byte)
+	{
+		_count++;
+		_checksum += @byte;
+
+		// 0x01, 0x02 or 0x03?
+		if (@byte is 0x01 or 0x02 or 0x03)
+		{
+			// Yes, escape it
+			_bytes.Add(0x03);
+			_bytes.Add((byte)(@byte + 0x03));
+			return;
+		}
+
+		// No, just add it
 		_bytes.Add(@byte);
 	}
 }

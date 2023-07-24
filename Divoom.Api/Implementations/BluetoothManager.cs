@@ -56,19 +56,6 @@ internal class BluetoothManager : IBluetooth
 		return SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
-	public Task<DeviceResponse> ViewTemperature(
-		DivoomBluetoothDevice device,
-		TemperatureUnit temperatureUnit,
-		CancellationToken cancellationToken)
-	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Lightning);
-		commandBuilder.Add((byte)temperatureUnit);
-
-		return SendCommandAsync(device, commandBuilder, cancellationToken);
-	}
-
 	public Task<DeviceResponse> SetBrightnessAsync(
 		DivoomBluetoothDevice device,
 		int brightness,
@@ -85,6 +72,49 @@ internal class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)brightness);
 
 		return SendCommandAsync(device, commandBuilder, cancellationToken);
+	}
+
+	public async Task SetVolumeAsync(
+		DivoomBluetoothDevice device,
+		int volume,
+		CancellationToken cancellationToken)
+	{
+		// Volume should be in the range 0 to 16
+		if (volume < 0 || volume > 16)
+		{
+			throw new ArgumentOutOfRangeException(nameof(volume), "Should be in the range 0 to 100");
+		}
+
+		// 3 doesn't seem to work.  Set to 2 instead
+		if (volume == 3)
+		{
+			volume = 2;
+		}
+
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.SetVolume);
+		commandBuilder.Add((byte)volume);
+
+		var response = await SendCommandAsync(device, commandBuilder, cancellationToken);
+	}
+
+	public async Task<int> GetVolumeAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken)
+	{
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.GetVolume);
+
+		try
+		{
+			var deviceReponse = await SendCommandAsync(device, commandBuilder, cancellationToken);
+
+			return deviceReponse.Bytes[0];
+		}
+		catch
+		{
+			return 3;
+		}
 	}
 
 	public Task<DeviceResponse> SetDateTimeAsync(
@@ -128,7 +158,7 @@ internal class BluetoothManager : IBluetooth
 	{
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Lightning);
+		commandBuilder.Add((byte)Channel.Weather);
 
 		return SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
@@ -168,11 +198,11 @@ internal class BluetoothManager : IBluetooth
 		return SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
-	public Task<DeviceResponse> ViewLightningAsync(
+	public Task<DeviceResponse> SetWeatherAsync(
 		DivoomBluetoothDevice device,
 		Color color,
 		int brightnessPercent,
-		LightningType lightningType,
+		WeatherType lightningType,
 		CancellationToken cancellationToken)
 	{
 		if (brightnessPercent < 0 || brightnessPercent > 100)
@@ -182,7 +212,7 @@ internal class BluetoothManager : IBluetooth
 
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Lightning);
+		commandBuilder.Add((byte)Channel.Weather);
 		commandBuilder.Add(color.R);
 		commandBuilder.Add(color.G);
 		commandBuilder.Add(color.B);
@@ -296,7 +326,7 @@ internal class BluetoothManager : IBluetooth
 					rawBytes.Add((byte)byteAsInt);
 					continue;
 				default:
-					if (byteAsInt == 2)
+					if (byteAsInt == 2 && byteIndex == length + 4)
 					{
 						// Get the CRC
 						var crc =
@@ -367,5 +397,33 @@ internal class BluetoothManager : IBluetooth
 		var deviceResponse = await SendCommandAsync(device, commandBuilder, cancellationToken);
 
 		return new DeviceSettings(deviceResponse);
+	}
+
+	public async Task<DeviceResponse> ViewImageAsync(
+		DivoomBluetoothDevice device,
+		Color[] image,
+		CancellationToken cancellationToken)
+	{
+		var palette = new List<Color>();
+		var encodedImage = new List<byte>();
+		foreach (var pixel in image)
+		{
+			var paletteIndex = palette.IndexOf(pixel);
+			if (paletteIndex == -1)
+			{
+				paletteIndex = palette.Count;
+				palette.Add(pixel);
+				if (palette.Count > 256)
+				{
+					throw new NotSupportedException("More than 256 colors not supported.  Less color variety must be pre-calculated.");
+				}
+			}
+
+			encodedImage.Add((byte)paletteIndex);
+		}
+
+		var bitsPerPixel = (int)Math.Ceiling(Math.Log(palette.Count, 2));
+
+		throw new NotImplementedException();
 	}
 }

@@ -60,11 +60,11 @@ public interface IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewLightningAsync(
+	Task<DeviceResponse> SetWeatherAsync(
 		DivoomBluetoothDevice device,
 		Color color,
 		int brightnessPercent,
-		LightningType lightningType,
+		WeatherType weatherType,
 		CancellationToken cancellationToken);
 
 	Task<DeviceResponse> ViewScoreboardAsync(
@@ -74,6 +74,20 @@ public interface IBluetooth
 		CancellationToken cancellationToken);
 
 	Task<DeviceSettings> GetSettingsAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
+
+	Task<DeviceResponse> ViewImageAsync(
+		DivoomBluetoothDevice device,
+		Color[] image,
+		CancellationToken cancellationToken);
+
+	Task SetVolumeAsync(
+		DivoomBluetoothDevice device,
+		int volume,
+		CancellationToken cancellationToken);
+
+	Task<int> GetVolumeAsync(
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 }
