@@ -25,7 +25,11 @@ public class BluetoothTests : Test
 		// Set the brightness from 0% to 100% in steps of 10
 		for (var brightness = 0; brightness <= 100; brightness += 10)
 		{
-			var deviceResponse = await Client.Bluetooth.SetBrightnessAsync(device, brightness, default);
+			var deviceResponse = await Client
+				.Bluetooth
+				.SetBrightnessAsync(device, brightness, default);
+
+			deviceResponse.IsOk.Should().BeTrue();
 		}
 	}
 
@@ -118,40 +122,99 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewTime_Succeeds()
+	public async void GetWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewTimeAsync(
-			device,
-			TimeType.TwentyFourHours,
-			ClockType.FullScreenNegative,
-			true,
-			false,
-			false,
-			false,
-			Color.Red,
-			default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.GetWeatherAsync(device, default);
+
+		deviceResponse.IsOk.Should().BeTrue();
 	}
 
 	[Fact]
-	public async void SetWeather_Succeeds()
+	public async void ViewTime_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.SetWeatherAsync(
-			device,
-			Color.Red,
-			100,
-			WeatherType.Snow,
-			default);
+		var deviceResponseSet = await Client
+			.Bluetooth
+			.ViewAllTheThingsAsync(
+				device,
+				TimeType.TwentyFourHours,
+				ClockType.FullScreenNegative,
+				false,
+				true,
+				false,
+				false,
+				Color.Red,
+				100,
+				default);
+	}
+
+	[Fact]
+	public async void ViewAllTheThingsAsync_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewAllTheThingsAsync(
+				device,
+				TimeType.TwentyFourHours,
+				ClockType.FullScreenNegative,
+				true,
+				true,
+				true,
+				true,
+				Color.Blue,
+				100,
+				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+
+	[Fact]
+	public async void SetWeather1_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.SetWeatherAsync(
+				device,
+				30,
+				WeatherType.Fog,
+				default
+			);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+
+	[Fact]
+	public async void ViewChannel_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		foreach (var channel in Enum.GetValues<Channel>())
+		{
+			var deviceResponseSet = await Client
+				.Bluetooth
+				.ViewChannelAsync(
+					device,
+					channel,
+					default);
+
+			await Task.Delay(1000);
+		}
 	}
 
 	[Fact]
 	public async void ViewCloudChannel_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewCloudChannelAsync(device, default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewCloudChannelAsync(device, default);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -198,7 +261,22 @@ public class BluetoothTests : Test
 	public async void ViewAnimation_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewAnimationAsync(device, default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewAnimationAsync(device, default);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+	[Fact]
+	public async void ViewStopwatch_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewStopwatchAsync(
+				device,
+				TimeSpan.FromMinutes(1),
+				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -208,11 +286,34 @@ public class BluetoothTests : Test
 	{
 		var device = GetFirstDevice();
 
-		var deviceResponse = await Client.Bluetooth.SetTemperatureAndWeatherAsync(device, -1, WeatherType.Thunderstorm, default);
-
-		deviceResponse = await Client.Bluetooth.ViewWeatherAsync(device, default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.SetWeatherAsync(
+				device,
+				-1,
+				WeatherType.Thunderstorm,
+				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
+
+		var deviceResponseSet = await Client
+			.Bluetooth
+			.ViewAllTheThingsAsync(
+				device,
+				TimeType.TwelveHours,
+				ClockType.AnalogRound,
+				true,
+				false,
+				false,
+				false,
+				Color.Blue,
+				100,
+				default);
+
+		deviceResponseSet
+			.IsOk
+			.Should()
+			.BeTrue();
 	}
 
 	[Fact]
@@ -227,19 +328,16 @@ public class BluetoothTests : Test
 	public async void SetDateTime_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.SetDateTimeAsync(device, DateTime.UtcNow.AddHours(1), default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.SetDateTimeAsync(
+				device,
+				DateTime.UtcNow.AddHours(1),
+				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
 
-	[Fact]
-	public async void SetTemperatureAndWeather_Succeeds()
-	{
-		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.SetTemperatureAndWeatherAsync(device, -1, WeatherType.Thunderstorm, default);
-
-		deviceResponse.IsOk.Should().BeTrue();
-	}
 
 	[Fact]
 	public async void ViewScoreboard_Succeeds()
