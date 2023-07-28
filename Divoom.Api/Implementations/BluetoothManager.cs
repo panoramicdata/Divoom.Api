@@ -86,6 +86,7 @@ internal class BluetoothManager : IBluetooth
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
+
 	public async Task SetTemperatureUnitAsync(
 		DivoomBluetoothDevice device,
 		TemperatureUnit temperatureUnit,
