@@ -567,7 +567,7 @@ internal sealed class BluetoothManager : IBluetooth
 
 			return new(Array.Empty<byte>());
 		}
-		catch (Exception ex)
+		catch
 		{
 			return new(Array.Empty<byte>());
 		}
