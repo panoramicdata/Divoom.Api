@@ -58,11 +58,16 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 			_ => throw new NotSupportedException()
 		};
 
-	private async Task<T?> LogWarningOnErrorAndContinueFromHttpContentAsync<T>(HttpContent content, CancellationToken _)
+	private async Task<T?> LogWarningOnErrorAndContinueFromHttpContentAsync<T>(
+		HttpContent content,
+		CancellationToken cancellationToken)
 	{
 		// This code has to read the content all at once into a stream
 		// as we might re-use it in the second DeserializeObject call
-		var sourceJson = await content.ReadAsStringAsync().ConfigureAwait(false);
+		var sourceJson = await content
+			.ReadAsStringAsync(cancellationToken)
+			.ConfigureAwait(false);
+
 		try
 		{
 			return JsonConvert.DeserializeObject<T>(sourceJson, _jsonSerializerSettingsWithError);
@@ -88,11 +93,14 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 		}
 	}
 
-	private async Task<T?> LogOnErrorAndThrowFromHttpContentAsync<T>(HttpContent content, CancellationToken _)
+	private async Task<T?> LogOnErrorAndThrowFromHttpContentAsync<T>(HttpContent content, CancellationToken cancellationToken)
 	{
 		// This code has to read the content all at once into a stream
 		// as we might re-use it in the second DeserializeObject call
-		var sourceJson = await content.ReadAsStringAsync().ConfigureAwait(false);
+		var sourceJson = await content
+			.ReadAsStringAsync(cancellationToken)
+			.ConfigureAwait(false);
+
 		try
 		{
 			return JsonConvert.DeserializeObject<T>(sourceJson, _jsonSerializerSettingsWithError);
