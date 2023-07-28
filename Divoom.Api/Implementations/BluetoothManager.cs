@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Divoom.Api.Implementations;
 
-internal class BluetoothManager : IBluetooth
+internal sealed class BluetoothManager : IBluetooth
 {
 	private readonly Dictionary<long, NetworkStream> _bluetoothClients = new();
 
