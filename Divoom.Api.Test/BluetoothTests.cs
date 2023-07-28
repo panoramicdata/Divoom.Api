@@ -121,6 +121,16 @@ public class BluetoothTests : Test
 		volume.Should().BeInRange(0, 16);
 	}
 
+
+	[Fact]
+	public async void GetOutput_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponseSet = await Client
+			.Bluetooth
+			.ReadResponseAsync(device, TimeSpan.FromMilliseconds(5000), default);
+	}
+
 	[Fact]
 	public async void GetMuteState_Succeeds()
 	{
@@ -139,6 +149,52 @@ public class BluetoothTests : Test
 			.Bluetooth
 			.SetMuteStateAsync(device,
 				MuteState.Muted,
+				default);
+	}
+
+	[Fact]
+	public async void SetTemperatureUnit_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		await Client
+			.Bluetooth
+			.SetTemperatureUnitAsync(device,
+				TemperatureUnit.Farenheit,
+				default);
+
+		var refetchedTemperatureUnit = await Client
+			.Bluetooth
+			.GetTemperatureUnitAsync(device, default);
+
+		refetchedTemperatureUnit
+			.Should()
+			.Be(TemperatureUnit.Farenheit);
+
+		await Client
+			.Bluetooth
+			.SetTemperatureUnitAsync(device,
+				TemperatureUnit.Celsius,
+				default);
+
+		refetchedTemperatureUnit = await Client
+			.Bluetooth
+			.GetTemperatureUnitAsync(device, default);
+
+		refetchedTemperatureUnit
+			.Should()
+			.Be(TemperatureUnit.Celsius);
+	}
+
+	[Fact]
+	public async void SetColor_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		await Client
+			.Bluetooth
+			.SetColorAsync(device,
+				DivoomColor.Green,
 				default);
 	}
 
@@ -241,10 +297,23 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
+	public async void ViewColorChange_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewColorChangeAsync(
+				device,
+				Color.Magenta,
+				default);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+	[Fact]
 	public async void ViewVjEffects_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponses = new List<DeviceResponse>();
 		foreach (var vjEffectType in Enum.GetValues<VjEffectType>())
 		{
 			var deviceResponse = await Client.Bluetooth.ViewVjEffectAsync(
@@ -254,7 +323,6 @@ public class BluetoothTests : Test
 
 			deviceResponse.IsOk.Should().BeTrue();
 
-			deviceResponses.Add(deviceResponse);
 			await Task.Delay(1000);
 		}
 	}
@@ -273,7 +341,6 @@ public class BluetoothTests : Test
 
 			deviceResponse.IsOk.Should().BeTrue();
 
-			deviceResponses.Add(deviceResponse);
 			await Task.Delay(1000);
 		}
 	}

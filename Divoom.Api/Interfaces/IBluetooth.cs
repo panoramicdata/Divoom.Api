@@ -75,25 +75,26 @@ public interface IBluetooth
 		int brightnessPercent,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewColorChangeAsync(
+	Task<DeviceResponseSet> ViewColorChangeAsync(
+		DivoomBluetoothDevice device,
+		Color color,
+		CancellationToken cancellationToken);
+
+	Task<DeviceResponseSet> ViewCloudChannelAsync(
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewCloudChannelAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken);
-
-	Task<DeviceResponse> ViewVjEffectAsync(
+	Task<DeviceResponseSet> ViewVjEffectAsync(
 		DivoomBluetoothDevice device,
 		VjEffectType vjEffectType,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewVisualizationAsync(
+	Task<DeviceResponseSet> ViewVisualizationAsync(
 		DivoomBluetoothDevice device,
 		VisualizationType visualizationType,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewAnimationAsync(
+	Task<DeviceResponseSet> ViewAnimationAsync(
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 
@@ -103,7 +104,7 @@ public interface IBluetooth
 		int blueScore,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewImageAsync(
+	Task<DeviceResponseSet> ViewImageAsync(
 		DivoomBluetoothDevice device,
 		Color[] image,
 		CancellationToken cancellationToken);
@@ -117,6 +118,21 @@ public interface IBluetooth
 		DivoomBluetoothDevice device,
 		TimeSpan timeSpan,
 		CancellationToken cancellationToken);
+
+	Task SetTemperatureUnitAsync(
+		DivoomBluetoothDevice device,
+		TemperatureUnit temperatureUnit,
+		CancellationToken cancellationToken);
+
+	Task<TemperatureUnit> GetTemperatureUnitAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
+
+	Task SetColorAsync(
+		DivoomBluetoothDevice device,
+		DivoomColor color,
+		CancellationToken cancellationToken);
+	Task<DeviceResponseSet> ReadResponseAsync(DivoomBluetoothDevice device, TimeSpan readDelay, CancellationToken cancellationToken);
 
 	#endregion
 }

@@ -9,6 +9,14 @@ This is a .NET library for controlling Divoom Timebox devices.
 
 It is based on the [Divoom Timebox API](http://doc.divoom-gz.com/web/#/12?page_id=189).
 
-I only have a PIXOO64 at present, so this is the only device currently supported.
+We only have access to the following devices at present, so these are the only onces we can develop against:
+* PIXOO64
+* Timebox Evo (16x16)
 
-Pull requests gratefully received.
+Gratefully received:
+* Documentation
+* Devices (ship to Panoramic House, 46 Heywood Avenue, SL6 3JA, UK)
+* Amazon **UK** vouchers to buy devices
+* Hints
+* Findings
+* Bluetooth logs

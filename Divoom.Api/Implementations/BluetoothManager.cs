@@ -75,6 +75,18 @@ internal class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
+	public async Task SetColorAsync(
+		DivoomBluetoothDevice device,
+		DivoomColor divoomColor,
+		CancellationToken cancellationToken)
+	{
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.SetColor);
+		commandBuilder.Add((byte)divoomColor);
+
+		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+	}
+
 	public async Task SetMuteStateAsync(
 		DivoomBluetoothDevice device,
 		MuteState muteState,
@@ -83,6 +95,17 @@ internal class BluetoothManager : IBluetooth
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetMuteState);
 		commandBuilder.Add((byte)muteState);
+
+		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+	}
+	public async Task SetTemperatureUnitAsync(
+		DivoomBluetoothDevice device,
+		TemperatureUnit temperatureUnit,
+		CancellationToken cancellationToken)
+	{
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.SetTemperatureUnit);
+		commandBuilder.Add((byte)temperatureUnit);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
@@ -215,19 +238,40 @@ internal class BluetoothManager : IBluetooth
 		return (MuteState)deviceResponse;
 	}
 
-	public async Task<DeviceResponse> ViewColorChangeAsync(
+	public async Task<TemperatureUnit> GetTemperatureUnitAsync(
 		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken)
+	{
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.SetTemperatureUnit);
+
+		var deviceReponseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+
+		var deviceResponse = deviceReponseSet.Responses[^1].Bytes[0];
+
+		return (TemperatureUnit)deviceResponse;
+	}
+
+	public async Task<DeviceResponseSet> ViewColorChangeAsync(
+		DivoomBluetoothDevice device,
+		Color color,
+		int brightnessPercent,
 		CancellationToken cancellationToken)
 	{
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
 		commandBuilder.Add((byte)Channel.ColorChange);
-
+		commandBuilder.Add(color.R); // Red
+		commandBuilder.Add(color.G); // Green
+		commandBuilder.Add(color.B); // Blue
+		commandBuilder.Add(0x16); // Brightness
+		commandBuilder.Add(0x16); // Brightness
+		commandBuilder.Add(0x16); // Brightness
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		return responseSet;
 	}
 
-	public async Task<DeviceResponse> ViewCloudChannelAsync(
+	public async Task<DeviceResponseSet> ViewCloudChannelAsync(
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
@@ -236,10 +280,10 @@ internal class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)Channel.CloudChannel);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		return responseSet;
 	}
 
-	public async Task<DeviceResponse> ViewVjEffectAsync(
+	public async Task<DeviceResponseSet> ViewVjEffectAsync(
 		DivoomBluetoothDevice device,
 		VjEffectType vjEffectType,
 		CancellationToken cancellationToken)
@@ -250,10 +294,10 @@ internal class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)vjEffectType);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		return responseSet;
 	}
 
-	public async Task<DeviceResponse> ViewAnimationAsync(
+	public async Task<DeviceResponseSet> ViewAnimationAsync(
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
@@ -262,7 +306,7 @@ internal class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)Channel.Animation);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		return responseSet;
 	}
 
 	public async Task<DeviceResponseSet> ViewChannelAsync(
@@ -327,7 +371,7 @@ internal class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
-	public async Task<DeviceResponse> ViewVisualizationAsync(DivoomBluetoothDevice device, VisualizationType visualizationType,
+	public async Task<DeviceResponseSet> ViewVisualizationAsync(DivoomBluetoothDevice device, VisualizationType visualizationType,
 		CancellationToken cancellationToken)
 	{
 		var commandBuilder = new CommandBuilder();
@@ -336,7 +380,7 @@ internal class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)visualizationType);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		return responseSet;
 	}
 
 	public async Task<DeviceResponseSet> ViewScoreboardAsync(
@@ -371,7 +415,7 @@ internal class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
-	public async Task<DeviceResponse> ViewImageAsync(
+	public async Task<DeviceResponseSet> ViewImageAsync(
 		DivoomBluetoothDevice device,
 		Color[] image,
 		CancellationToken cancellationToken)
@@ -412,8 +456,20 @@ internal class BluetoothManager : IBluetooth
 		var bytes = commandBuilder.GetBytes();
 		stream.Write(bytes, 0, bytes.Length);
 
-		// Give the device a chance to respond
-		await Task.Delay(500, cancellationToken);
+		return await ReadResponseAsync(
+			device,
+			TimeSpan.FromMilliseconds(500),
+			cancellationToken);
+	}
+
+	public async Task<DeviceResponseSet> ReadResponseAsync(
+		DivoomBluetoothDevice device,
+		TimeSpan readDelay,
+		CancellationToken cancellationToken)
+	{
+		var stream = GetStream(device);
+
+		await Task.Delay(readDelay, cancellationToken);
 
 		var responses = new List<DeviceResponse>();
 		while (true)

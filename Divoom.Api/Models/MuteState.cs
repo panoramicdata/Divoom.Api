@@ -1,8 +1,7 @@
-﻿namespace Divoom.Api.Models
+﻿namespace Divoom.Api.Models;
+
+public enum MuteState
 {
-	public enum MuteState
-	{
-		Unmuted = 0x00,
-		Muted = 0x01,
-	}
+	Unmuted = 0x00,
+	Muted = 0x01,
 }
