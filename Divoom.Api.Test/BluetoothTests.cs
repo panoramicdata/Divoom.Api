@@ -122,6 +122,27 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
+	public async void GetMuteState_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var muteState = await Client
+			.Bluetooth
+			.GetMuteStateAsync(device, default);
+	}
+
+	[Fact]
+	public async void SetMuteState_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		await Client
+			.Bluetooth
+			.SetMuteStateAsync(device,
+				MuteState.Muted,
+				default);
+	}
+
+	[Fact]
 	public async void GetWeather_Succeeds()
 	{
 		var device = GetFirstDevice();

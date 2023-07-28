@@ -25,6 +25,10 @@ public interface IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 
+	Task<MuteState> GetMuteStateAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
+
 	#endregion
 
 	#region Set
@@ -44,9 +48,15 @@ public interface IBluetooth
 		int temperature,
 		WeatherType thunderstorm,
 		CancellationToken cancellationToken);
+
 	Task SetVolumeAsync(
 		DivoomBluetoothDevice device,
 		int volume,
+		CancellationToken cancellationToken);
+
+	Task SetMuteStateAsync(
+		DivoomBluetoothDevice device,
+		MuteState muteState,
 		CancellationToken cancellationToken);
 
 	#endregion

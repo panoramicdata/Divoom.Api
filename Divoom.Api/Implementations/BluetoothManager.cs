@@ -75,6 +75,18 @@ internal class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
+	public async Task SetMuteStateAsync(
+		DivoomBluetoothDevice device,
+		MuteState muteState,
+		CancellationToken cancellationToken)
+	{
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.SetMuteState);
+		commandBuilder.Add((byte)muteState);
+
+		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+	}
+
 	public async Task<DeviceResponse> SetDateTimeAsync(
 		DivoomBluetoothDevice device,
 		DateTime dateTime,
@@ -187,6 +199,20 @@ internal class BluetoothManager : IBluetooth
 		{
 			return 3;
 		}
+	}
+
+	public async Task<MuteState> GetMuteStateAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken)
+	{
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.GetMuteState);
+
+		var deviceReponseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+
+		var deviceResponse = deviceReponseSet.Responses[^1].Bytes[0];
+
+		return (MuteState)deviceResponse;
 	}
 
 	public async Task<DeviceResponse> ViewColorChangeAsync(

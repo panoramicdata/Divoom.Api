@@ -10,7 +10,6 @@ public enum Command
 	SetMuteState = 0x0a,
 	GetMuteState = 0x0b,
 	SetDateTime = 0x18,
-	GetBrightness = 0x31,
 	Command32 = 0x32,
 	SetStaticImage = 0x44,
 	SetChannel = 0x45,
