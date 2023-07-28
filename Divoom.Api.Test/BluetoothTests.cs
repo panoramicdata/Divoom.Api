@@ -187,18 +187,6 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void SetColor_Succeeds()
-	{
-		var device = GetFirstDevice();
-
-		await Client
-			.Bluetooth
-			.SetColorAsync(device,
-				DivoomColor.Green,
-				default);
-	}
-
-	[Fact]
 	public async void GetWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
@@ -297,14 +285,17 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewColorChange_Succeeds()
+	public async void ViewLighting_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
 			.Bluetooth
-			.ViewColorChangeAsync(
+			.ViewLightingAsync(
 				device,
 				Color.Magenta,
+				100,
+				LightingPattern.Custom,
+				PowerState.On,
 				default);
 
 		deviceResponse.IsOk.Should().BeTrue();

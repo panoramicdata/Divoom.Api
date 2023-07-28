@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Divoom.Api.Implementations;
 
-internal class CommandBuilder
+internal sealed class CommandBuilder
 {
 	readonly List<byte> _bytes = new();
 	uint _checksum;

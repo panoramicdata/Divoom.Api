@@ -75,18 +75,6 @@ internal class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
-	public async Task SetColorAsync(
-		DivoomBluetoothDevice device,
-		DivoomColor divoomColor,
-		CancellationToken cancellationToken)
-	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetColor);
-		commandBuilder.Add((byte)divoomColor);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-	}
-
 	public async Task SetMuteStateAsync(
 		DivoomBluetoothDevice device,
 		MuteState muteState,
@@ -252,26 +240,31 @@ internal class BluetoothManager : IBluetooth
 		return (TemperatureUnit)deviceResponse;
 	}
 
-	public async Task<DeviceResponseSet> ViewColorChangeAsync(
+	public async Task<DeviceResponseSet> ViewLightingAsync(
 		DivoomBluetoothDevice device,
 		Color color,
 		int brightnessPercent,
+		LightingPattern lightingPattern,
+		PowerState powerStatus,
 		CancellationToken cancellationToken)
 	{
-		if (brightnessPercent < 0 or > 100)
+		if (brightnessPercent < 0 || brightnessPercent > 100)
 		{
-			throw new ArgumentOutOfRangeException(nameof(bringhtnessPercent));
+			throw new ArgumentOutOfRangeException(nameof(brightnessPercent));
 		}
 
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.ColorChange);
-		commandBuilder.Add(color.R); // Red
-		commandBuilder.Add(color.G); // Green
-		commandBuilder.Add(color.B); // Blue
-		commandBuilder.Add(0x16); // Brightness
-		commandBuilder.Add(0x16); // Brightness
-		commandBuilder.Add(0x16); // Brightness
+		commandBuilder.Add((byte)Channel.Lighting);
+		commandBuilder.Add(color.R);
+		commandBuilder.Add(color.G);
+		commandBuilder.Add(color.B);
+
+		commandBuilder.Add((byte)brightnessPercent);
+
+		commandBuilder.Add((byte)lightingPattern);
+
+		commandBuilder.Add((byte)powerStatus);
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 		return responseSet;
 	}

@@ -75,9 +75,12 @@ public interface IBluetooth
 		int brightnessPercent,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponseSet> ViewColorChangeAsync(
+	Task<DeviceResponseSet> ViewLightingAsync(
 		DivoomBluetoothDevice device,
 		Color color,
+		int brightnessPercent,
+		LightingPattern lightingPattern,
+		PowerState powerStatus,
 		CancellationToken cancellationToken);
 
 	Task<DeviceResponseSet> ViewCloudChannelAsync(
@@ -128,10 +131,6 @@ public interface IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 
-	Task SetColorAsync(
-		DivoomBluetoothDevice device,
-		DivoomColor color,
-		CancellationToken cancellationToken);
 	Task<DeviceResponseSet> ReadResponseAsync(DivoomBluetoothDevice device, TimeSpan readDelay, CancellationToken cancellationToken);
 
 	#endregion

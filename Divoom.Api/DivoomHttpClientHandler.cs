@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Divoom.Api;
 
-internal class DivoomHttpClientHandler : HttpClientHandler
+internal sealed class DivoomHttpClientHandler : HttpClientHandler
 {
 	private readonly DivoomClientOptions _options;
 	private readonly DivoomClient _DivoomClient;
@@ -43,7 +43,7 @@ internal class DivoomHttpClientHandler : HttpClientHandler
 				_logger.Log(_levelToLogAt, "{LogPrefix}Request\r\n{Request}", logPrefix, request);
 				if (request.Content != null)
 				{
-					var requestContent = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+					var requestContent = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 					_logger.Log(_levelToLogAt, "{LogPrefix}RequestContent\r\n{RequestContent}", logPrefix, requestContent);
 				}
 			}
@@ -57,7 +57,7 @@ internal class DivoomHttpClientHandler : HttpClientHandler
 				_logger.Log(_levelToLogAt, "{LogPrefix}Response\r\n{HttpResponseMessage}", logPrefix, httpResponseMessage);
 				if (httpResponseMessage.Content != null)
 				{
-					var responseContent = await httpResponseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+					var responseContent = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 					_logger.Log(_levelToLogAt, "{LogPrefix}ResponseContent\r\n{ResponseContent}", logPrefix, responseContent);
 				}
 			}
