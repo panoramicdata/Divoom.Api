@@ -16,7 +16,7 @@ We only have access to the following devices at present, so these are the only o
 Gratefully received:
 * Documentation
 * Devices (ship to Panoramic House, 46 Heywood Avenue, SL6 3JA, UK)
-* Amazon **UK** vouchers to buy devices
+* Amazon UK vouchers to buy devices
 * Hints
 * Findings
 * Bluetooth logs

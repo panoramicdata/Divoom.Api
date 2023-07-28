@@ -258,6 +258,11 @@ internal class BluetoothManager : IBluetooth
 		int brightnessPercent,
 		CancellationToken cancellationToken)
 	{
+		if (brightnessPercent < 0 or > 100)
+		{
+			throw new ArgumentOutOfRangeException(nameof(bringhtnessPercent));
+		}
+
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
 		commandBuilder.Add((byte)Channel.ColorChange);
