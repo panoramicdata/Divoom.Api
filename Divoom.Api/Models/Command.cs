@@ -10,8 +10,8 @@ public enum Command
 	SetMuteState = 0x0a,
 	GetMuteState = 0x0b,
 	SetDateTime = 0x18,
-	Command31 = 0x31,
-	Command32 = 0x32,
+	InfoBrightness31 = 0x31,
+	InfoBrightness32 = 0x32,
 	SetStaticImage = 0x44,
 	SetChannel = 0x45,
 	GetSettings = 0x46,
@@ -23,5 +23,5 @@ public enum Command
 	GetRadioFrequency = 0x60,
 	SetRadioFrequency = 0x61,
 	SetBrightness = 0x74,
-	BadRequest = 0xBD,
+	BadRequest = 0xBD
 }

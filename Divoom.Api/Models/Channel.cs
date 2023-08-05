@@ -2,7 +2,7 @@
 
 public enum Channel
 {
-	AllTheThings = 0x00,
+	Clock = 0x00,
 	Lighting = 0x01,
 	CloudChannel = 0x02,
 	VjEffects = 0x03,

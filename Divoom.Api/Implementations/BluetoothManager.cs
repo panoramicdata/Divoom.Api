@@ -118,7 +118,7 @@ internal sealed class BluetoothManager : IBluetooth
 		return responseSet.Responses.Single();
 	}
 
-	public async Task<DeviceResponse> SetWeatherAsync(
+	public async Task<DeviceResponseSet> SetWeatherAsync(
 		DivoomBluetoothDevice device,
 		int temperature,
 		WeatherType weatherType,
@@ -133,7 +133,7 @@ internal sealed class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)weatherType);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		return responseSet;
 	}
 
 	public async Task SetVolumeAsync(
@@ -163,7 +163,42 @@ internal sealed class BluetoothManager : IBluetooth
 	#endregion
 
 	#region View
-	public async Task<DeviceResponse> ViewAllTheThingsAsync(
+
+	public async Task<DeviceResponseSet> ViewClockAsync(
+		DivoomBluetoothDevice device,
+		TimeType timeType,
+		ClockType clockType,
+		bool showTime,
+		bool showWeather,
+		bool showTemperature,
+		bool showCalendar,
+		Color color,
+		int brightnessPercent,
+		CancellationToken cancellationToken)
+	{
+		if (brightnessPercent < 0 || brightnessPercent > 100)
+		{
+			throw new ArgumentOutOfRangeException(nameof(brightnessPercent));
+		}
+
+		var commandBuilder = new CommandBuilder();
+		commandBuilder.Add((byte)Command.SetChannel);
+		commandBuilder.Add((byte)Channel.Clock);
+		commandBuilder.Add(color.R);
+		commandBuilder.Add(color.G);
+		commandBuilder.Add(color.B);
+		commandBuilder.Add((byte)brightnessPercent);
+		commandBuilder.Add(0x64);
+		commandBuilder.Add(showTime ? (byte)0x01 : (byte)0x00);
+		commandBuilder.Add(showWeather ? (byte)0x01 : (byte)0x00);
+		commandBuilder.Add(showTemperature ? (byte)0x01 : (byte)0x00);
+		commandBuilder.Add(showCalendar ? (byte)0x01 : (byte)0x00);
+
+		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		return responseSet;
+	}
+
+	public async Task<DeviceResponse> ViewClock2Async(
 		DivoomBluetoothDevice device,
 		TimeType timeType,
 		ClockType clockType,
@@ -177,7 +212,7 @@ internal sealed class BluetoothManager : IBluetooth
 	{
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.AllTheThings);
+		commandBuilder.Add((byte)Channel.Clock);
 		commandBuilder.Add((byte)timeType);
 		commandBuilder.Add((byte)clockType);
 		commandBuilder.Add((byte)(showTime ? 1 : 0));
@@ -336,40 +371,6 @@ internal sealed class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
-	public async Task<DeviceResponseSet> ViewAllTheThingsAsync(
-		DivoomBluetoothDevice device,
-		TimeType timeType,
-		ClockType clockType,
-		bool showTime,
-		bool showWeather,
-		bool showTemperature,
-		bool showCalendar,
-		Color color,
-		int brightnessPercent,
-		CancellationToken cancellationToken)
-	{
-		if (brightnessPercent < 0 || brightnessPercent > 100)
-		{
-			throw new ArgumentOutOfRangeException(nameof(brightnessPercent));
-		}
-
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.AllTheThings);
-		commandBuilder.Add(color.R);
-		commandBuilder.Add(color.G);
-		commandBuilder.Add(color.B);
-		commandBuilder.Add((byte)brightnessPercent);
-		commandBuilder.Add(0x64);
-		commandBuilder.Add(showTime ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(showWeather ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(showTemperature ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(showCalendar ? (byte)0x01 : (byte)0x00);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
-	}
-
 	public async Task<DeviceResponseSet> ViewVisualizationAsync(DivoomBluetoothDevice device, VisualizationType visualizationType,
 		CancellationToken cancellationToken)
 	{
@@ -419,6 +420,7 @@ internal sealed class BluetoothManager : IBluetooth
 		Color[] image,
 		CancellationToken cancellationToken)
 	{
+		// See https://github.com/RomRider/node-divoom-timebox-evo/blob/master/PROTOCOL.md#animations-images-and-text
 		var palette = new List<Color>();
 		var encodedImage = new List<byte>();
 		foreach (var pixel in image)
@@ -426,20 +428,113 @@ internal sealed class BluetoothManager : IBluetooth
 			var paletteIndex = palette.IndexOf(pixel);
 			if (paletteIndex == -1)
 			{
-				paletteIndex = palette.Count;
 				palette.Add(pixel);
 				if (palette.Count > 256)
 				{
 					throw new NotSupportedException("More than 256 colors not supported.  Less color variety must be pre-calculated.");
 				}
 			}
+		}
 
-			encodedImage.Add((byte)paletteIndex);
+		// Hack (inefficiency)
+		// Pad the palette with black to ensure 8 bits per pixel.
+		while (palette.Count < 256)
+		{
+			palette.Add(Color.Black);
 		}
 
 		var bitsPerPixel = (int)Math.Ceiling(Math.Log(palette.Count, 2));
 
-		throw new NotImplementedException();
+		if (bitsPerPixel == 8)
+		{
+			foreach (var pixel in image)
+			{
+				encodedImage.Add((byte)palette.IndexOf(pixel));
+			}
+		}
+		else
+		{
+			encodedImage.Add(0);
+
+			var encodedImageByteIndex = 0;
+			var encodedImageByteBitIndex = 0;
+			foreach (var pixel in image)
+			{
+				var paletteIndex = (byte)palette.IndexOf(pixel);
+				for (var bitIndex = 0; bitIndex < bitsPerPixel; bitIndex++)
+				{
+					if (encodedImageByteBitIndex == 8)
+					{
+						encodedImage.Add(0);
+						encodedImageByteIndex++;
+						encodedImageByteBitIndex = 0;
+					}
+
+					var bit = (paletteIndex & (1 << bitIndex)) != 0;
+					if (bit)
+					{
+						encodedImage[encodedImageByteIndex] |= (byte)(1 << encodedImageByteBitIndex);
+					}
+
+					encodedImageByteBitIndex++;
+				}
+			}
+
+			// Reverse the order of the bits in each byte of encoded image
+			for (var i = 0; i < encodedImage.Count; i++)
+			{
+				encodedImage[i] = (byte)((encodedImage[i] * 0x0202020202UL & 0x010884422010UL) % 1023);
+			}
+		}
+
+		// 44000A0A04 AA LLLL 000000 NN COLOR_DATA PIXEL_DATA
+		// |<-HEAD->| |<-----------IMAGE_DATA-------------->|
+
+		var commandBuilder = new CommandBuilder();
+
+		// HEAD
+		commandBuilder.Add((byte)Command.SetStaticImage);
+		commandBuilder.Add(0x00); // Fixed
+		commandBuilder.Add(0x0a); // Fixed
+		commandBuilder.Add(0x0a); // Fixed
+		commandBuilder.Add(0x04); // Fixed
+
+		// Image data
+		commandBuilder.Add(0xaa); // Image start
+
+		// Image length
+		var imageLength = 7 + palette.Count * 3 + encodedImage.Count;
+		commandBuilder.Add((byte)(imageLength & 0xff));
+		commandBuilder.Add((byte)(imageLength >> 8 & 0xff));
+
+		// Image type
+		commandBuilder.Add(0x00); // Fixed
+		commandBuilder.Add(0x00); // Fixed
+		commandBuilder.Add(0x00); // Fixed
+
+		// Number of colors
+		commandBuilder.Add((byte)(
+			palette.Count == 256
+				? 0
+				: palette.Count
+			)
+		);
+
+		// Color data
+		foreach (var color in palette)
+		{
+			commandBuilder.Add(color.R);
+			commandBuilder.Add(color.G);
+			commandBuilder.Add(color.B);
+		};
+
+		// Pixel data
+		foreach (var pixel in encodedImage)
+		{
+			commandBuilder.Add(pixel);
+		}
+
+		return await SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
 	#endregion

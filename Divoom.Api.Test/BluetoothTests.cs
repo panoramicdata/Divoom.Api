@@ -1,7 +1,8 @@
 ﻿using Divoom.Api.Models;
 using FluentAssertions;
-using System.Drawing;
 using Xunit.Abstractions;
+using Color = System.Drawing.Color;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Divoom.Api.Test;
 
@@ -203,7 +204,7 @@ public class BluetoothTests : Test
 		var device = GetFirstDevice();
 		var deviceResponseSet = await Client
 			.Bluetooth
-			.ViewAllTheThingsAsync(
+			.ViewClockAsync(
 				device,
 				TimeType.TwentyFourHours,
 				ClockType.FullScreenNegative,
@@ -217,12 +218,12 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewAllTheThingsAsync_Succeeds()
+	public async void ViewClockAsync_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
 			.Bluetooth
-			.ViewAllTheThingsAsync(
+			.ViewClockAsync(
 				device,
 				TimeType.TwentyFourHours,
 				ClockType.FullScreenNegative,
@@ -237,21 +238,40 @@ public class BluetoothTests : Test
 		deviceResponse.IsOk.Should().BeTrue();
 	}
 
-
 	[Fact]
-	public async void SetWeather1_Succeeds()
+	public async void ViewClockAsync_JustClock_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
 			.Bluetooth
+			.ViewClock2Async(
+				device,
+				TimeType.TwelveHours,
+				ClockType.FullScreen,
+				false,
+				false,
+				false,
+				true,
+				Color.Yellow,
+				default);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+	[Fact]
+	public async void SetWeatherAsync_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponseSet = await Client
+			.Bluetooth
 			.SetWeatherAsync(
 				device,
 				30,
-				WeatherType.Fog,
+				WeatherType.Clear,
 				default
 			);
 
-		deviceResponse.IsOk.Should().BeTrue();
+		deviceResponseSet.IsOk.Should().BeTrue();
 	}
 
 
@@ -346,6 +366,7 @@ public class BluetoothTests : Test
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
+
 	[Fact]
 	public async void ViewStopwatch_Succeeds()
 	{
@@ -377,7 +398,7 @@ public class BluetoothTests : Test
 
 		var deviceResponseSet = await Client
 			.Bluetooth
-			.ViewAllTheThingsAsync(
+			.ViewClockAsync(
 				device,
 				TimeType.TwelveHours,
 				ClockType.AnalogRound,
@@ -442,7 +463,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewImageSucceeds()
+	public async void ViewImage_Constructed_Succeeds()
 	{
 		var image = new Color[256];
 		var pixelIndex = 0;
@@ -450,11 +471,55 @@ public class BluetoothTests : Test
 		{
 			for (var y = 0; y < 16; y++)
 			{
-				var r = x % 2 == 0 ? 0x00 : 0xff;
-				var g = y % 2 == 0 ? 0x00 : 0xff;
-				var b = (byte)(x * 16);
+				var r = pixelIndex;
+				var g = x * 16;
+				var b = y * 16;
 				image[pixelIndex++] = Color.FromArgb(r, g, b);
 			}
+		}
+
+		var device = GetFirstDevice();
+
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewImageAsync(
+				device,
+				image,
+				default
+			);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+	[Fact]
+	public async void ViewImage_FromFile_Succeeds()
+	{
+		var image = new Color[256];
+		var pixelIndex = 0;
+		// Load PNG image from file using SixLabors.ImageSharp
+		using (var fileImage = Image.Load<Rgb24>("../../../Images/ReportMagic.png"))
+		{
+			if (fileImage.Width != 16 && fileImage.Height != 16)
+			{
+				fileImage.Mutate(x => x.Resize(16, 16));
+			}
+
+			fileImage.ProcessPixelRows(accessor =>
+			{
+				for (var y = 0; y < 16; y++)
+				{
+					Span<Rgb24> pixelRow = accessor.GetRowSpan(y);
+					for (var x = 0; x < 16; x++)
+					{
+						ref Rgb24 pixel = ref pixelRow[x];
+
+						var r = pixel.R;
+						var g = pixel.G;
+						var b = pixel.B;
+						image[pixelIndex++] = Color.FromArgb(r, g, b);
+					}
+				}
+			});
 		}
 
 		var device = GetFirstDevice();

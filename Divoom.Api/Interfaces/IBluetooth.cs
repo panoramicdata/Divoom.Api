@@ -43,10 +43,10 @@ public interface IBluetooth
 		int percent,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> SetWeatherAsync(
+	Task<DeviceResponseSet> SetWeatherAsync(
 		DivoomBluetoothDevice device,
 		int temperature,
-		WeatherType thunderstorm,
+		WeatherType weatherType,
 		CancellationToken cancellationToken);
 
 	Task SetVolumeAsync(
@@ -63,7 +63,7 @@ public interface IBluetooth
 
 	#region View
 
-	Task<DeviceResponseSet> ViewAllTheThingsAsync(
+	Task<DeviceResponseSet> ViewClockAsync(
 		DivoomBluetoothDevice device,
 		TimeType timeType,
 		ClockType clockType,
@@ -74,6 +74,18 @@ public interface IBluetooth
 		Color color,
 		int brightnessPercent,
 		CancellationToken cancellationToken);
+
+	public Task<DeviceResponse> ViewClock2Async(
+		DivoomBluetoothDevice device,
+		TimeType timeType,
+		ClockType clockType,
+		bool showTime,
+		bool showWeather,
+		bool showTemperature,
+		bool showCalendar,
+		Color color,
+		CancellationToken cancellationToken
+		);
 
 	Task<DeviceResponseSet> ViewLightingAsync(
 		DivoomBluetoothDevice device,
