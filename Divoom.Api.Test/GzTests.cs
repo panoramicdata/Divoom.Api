@@ -11,7 +11,7 @@ public class GzTests : Test
 	}
 
 	[Fact]
-	public async void GetDialTypesAsync_Succeeds()
+	public async Task GetDialTypesAsync_Succeeds()
 	{
 		var response = await Client.Gz.GetDialTypesAsync(default);
 		response.Should().NotBeNull();
@@ -20,7 +20,7 @@ public class GzTests : Test
 	}
 
 	[Fact]
-	public async void GetLanDevicesAsync_Succeeds()
+	public async Task GetLanDevicesAsync_Succeeds()
 	{
 		var response = await Client.Gz.GetLanDevicesAsync(default);
 		response.Should().NotBeNull();
@@ -29,7 +29,7 @@ public class GzTests : Test
 	}
 
 	[Fact]
-	public async void GetChannelDialsAsync_Succeeds()
+	public async Task GetChannelDialsAsync_Succeeds()
 	{
 		var response = await Client.Gz.GetChannelDialsAsync(new GetChannelDialsRequest
 		{
@@ -42,7 +42,7 @@ public class GzTests : Test
 	}
 
 	[Fact]
-	public async void GetDialFontsAsync_Succeeds()
+	public async Task GetDialFontsAsync_Succeeds()
 	{
 		var response = await Client.Gz.GetDialFontsAsync(default);
 		response.Should().NotBeNull();
@@ -51,7 +51,7 @@ public class GzTests : Test
 	}
 
 	[Fact]
-	public async void GetImagesAsync_Succeeds()
+	public async Task GetImagesAsync_Succeeds()
 	{
 		var response = await Client.Gz.GetImagesAsync(new GetImagesRequest
 		{
@@ -65,7 +65,7 @@ public class GzTests : Test
 	}
 
 	[Fact]
-	public async void GetLikedImagesAsync_Succeeds()
+	public async Task GetLikedImagesAsync_Succeeds()
 	{
 		var response = await Client.Gz.GetLikedImagesAsync(new GetImagesRequest
 		{
