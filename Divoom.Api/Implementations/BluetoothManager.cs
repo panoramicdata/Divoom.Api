@@ -343,6 +343,13 @@ internal sealed class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
+	/// <summary>
+	/// Views a channel, without changing its settings
+	/// </summary>
+	/// <param name="device"></param>
+	/// <param name="channel"></param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
 	public async Task<DeviceResponseSet> ViewChannelAsync(
 		DivoomBluetoothDevice device,
 		Channel channel,
@@ -371,6 +378,13 @@ internal sealed class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
+	/// <summary>
+	/// Views a visualization that moves with the bluetooth audio signal
+	/// </summary>
+	/// <param name="device">The device</param>
+	/// <param name="visualizationType">The visualization</param>
+	/// <param name="cancellationToken">The CancellationToken</param>
+	/// <returns></returns>
 	public async Task<DeviceResponseSet> ViewVisualizationAsync(DivoomBluetoothDevice device, VisualizationType visualizationType,
 		CancellationToken cancellationToken)
 	{
@@ -383,6 +397,15 @@ internal sealed class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
+	/// <summary>
+	/// Views a scroeboard
+	/// </summary>
+	/// <param name="device">The device</param>
+	/// <param name="redScore">The red score (0..999)</param>
+	/// <param name="blueScore">The blue score (0..999)</param>
+	/// <param name="cancellationToken">The CancellationToken</param>
+	/// <returns></returns>
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	public async Task<DeviceResponseSet> ViewScoreboardAsync(
 		DivoomBluetoothDevice device,
 		int redScore,
@@ -415,6 +438,14 @@ internal sealed class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
+	/// <summary>
+	/// Views an image
+	/// </summary>
+	/// <param name="device">The device</param>
+	/// <param name="image">An array of 256 colors, one for each pixel starting top left, moving left to right, then top to bottom.</param>
+	/// <param name="cancellationToken">The CancellationToken</param>
+	/// <returns></returns>
+	/// <exception cref="NotSupportedException"></exception>
 	public async Task<DeviceResponseSet> ViewImageAsync(
 		DivoomBluetoothDevice device,
 		Color[] image,
@@ -539,23 +570,14 @@ internal sealed class BluetoothManager : IBluetooth
 
 	#endregion
 
-	#region Private
 
-	private async Task<DeviceResponseSet> SendCommandAsync(
-		DivoomBluetoothDevice device,
-		CommandBuilder commandBuilder,
-		CancellationToken cancellationToken)
-	{
-		var stream = GetStream(device);
-		var bytes = commandBuilder.GetBytes();
-		stream.Write(bytes, 0, bytes.Length);
-
-		return await ReadResponseAsync(
-			device,
-			TimeSpan.FromMilliseconds(500),
-			cancellationToken);
-	}
-
+	/// <summary>
+	/// Reads any pending messages from the device
+	/// </summary>
+	/// <param name="device">The device</param>
+	/// <param name="readDelay">The read delay</param>
+	/// <param name="cancellationToken">The CancellationToken</param>
+	/// <returns></returns>
 	public async Task<DeviceResponseSet> ReadResponseAsync(
 		DivoomBluetoothDevice device,
 		TimeSpan readDelay,
@@ -578,6 +600,23 @@ internal sealed class BluetoothManager : IBluetooth
 		}
 
 		return new DeviceResponseSet(responses);
+	}
+
+	#region Private
+
+	private async Task<DeviceResponseSet> SendCommandAsync(
+		DivoomBluetoothDevice device,
+		CommandBuilder commandBuilder,
+		CancellationToken cancellationToken)
+	{
+		var stream = GetStream(device);
+		var bytes = commandBuilder.GetBytes();
+		stream.Write(bytes, 0, bytes.Length);
+
+		return await ReadResponseAsync(
+			device,
+			TimeSpan.FromMilliseconds(500),
+			cancellationToken);
 	}
 
 	private static DeviceResponse ReadResponse(NetworkStream stream)
