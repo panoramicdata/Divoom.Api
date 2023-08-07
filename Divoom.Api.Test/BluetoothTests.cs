@@ -101,7 +101,8 @@ public class BluetoothTests : Test
 		}
 		catch (ArgumentOutOfRangeException)
 		{
-			return;
+			//To stop codacy complaining about empty catch blocks
+			_ = 0;
 		}
 	}
 
