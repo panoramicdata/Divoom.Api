@@ -75,14 +75,13 @@ public class BluetoothTests : Test
 				.Bluetooth
 				.GetVolumeAsync(device, default);
 
-			switch (volume)
+			if (volume == 16)
 			{
-				case 16:
-					volumeRefetch.Should().Be(15);
-					break;
-				default:
-					volumeRefetch.Should().Be(volume);
-					break;
+				volumeRefetch.Should().Be(15);
+			}
+			else
+			{
+				volumeRefetch.Should().Be(volume);
 			}
 		}
 	}
