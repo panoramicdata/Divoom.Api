@@ -25,7 +25,7 @@ public class BluetoothTests : Test
 		// Set the brightness from 0% to 100% in steps of 10
 		for (var brightness = 0; brightness <= 100; brightness += 10)
 		{
-			var deviceResponse = await Client.Bluetooth.SetBrightnessAsync(device, brightness, default);
+			_ = await Client.Bluetooth.SetBrightnessAsync(device, brightness, default);
 		}
 	}
 
@@ -121,7 +121,7 @@ public class BluetoothTests : Test
 	public async Task ViewTime_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewTimeAsync(
+		_ = await Client.Bluetooth.ViewTimeAsync(
 			device,
 			TimeType.TwentyFourHours,
 			ClockType.FullScreenNegative,
@@ -220,7 +220,7 @@ public class BluetoothTests : Test
 	{
 		var device = GetFirstDevice();
 
-		var deviceSettings = await Client.Bluetooth.GetSettingsAsync(device, default);
+		_ = await Client.Bluetooth.GetSettingsAsync(device, default);
 	}
 
 	[Fact]
