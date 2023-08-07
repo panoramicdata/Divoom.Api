@@ -90,7 +90,7 @@ public class BluetoothTests : Test
 	[Theory]
 	[InlineData(-1)]
 	[InlineData(17)]
-	public async void SetVolume_Fails_OutsideRange(int illegalVolume)
+	public async Task SetVolume_Fails_OutsideRange(int illegalVolume)
 	{
 		var device = GetFirstDevice();
 		try
