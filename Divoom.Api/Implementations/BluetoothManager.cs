@@ -305,44 +305,6 @@ internal sealed class BluetoothManager : IBluetooth
 		return responseSet;
 	}
 
-	public async Task<DeviceResponseSet> ViewCloudChannelAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken)
-	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.CloudChannel);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
-	}
-
-	public async Task<DeviceResponseSet> ViewVjEffectAsync(
-		DivoomBluetoothDevice device,
-		VjEffectType vjEffectType,
-		CancellationToken cancellationToken)
-	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.VjEffects);
-		commandBuilder.Add((byte)vjEffectType);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
-	}
-
-	public async Task<DeviceResponseSet> ViewAnimationAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken)
-	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Animation);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
-	}
-
 	/// <summary>
 	/// Views a channel, without changing its settings
 	/// </summary>
@@ -385,7 +347,9 @@ internal sealed class BluetoothManager : IBluetooth
 	/// <param name="visualizationType">The visualization</param>
 	/// <param name="cancellationToken">The CancellationToken</param>
 	/// <returns></returns>
-	public async Task<DeviceResponseSet> ViewVisualizationAsync(DivoomBluetoothDevice device, VisualizationType visualizationType,
+	public async Task<DeviceResponseSet> ViewVisualizationAsync(
+		DivoomBluetoothDevice device,
+		VisualizationType visualizationType,
 		CancellationToken cancellationToken)
 	{
 		var commandBuilder = new CommandBuilder();
@@ -448,76 +412,9 @@ internal sealed class BluetoothManager : IBluetooth
 	/// <exception cref="NotSupportedException"></exception>
 	public async Task<DeviceResponseSet> ViewImageAsync(
 		DivoomBluetoothDevice device,
-		Color[] image,
+		DivoomImage divoomImage,
 		CancellationToken cancellationToken)
 	{
-		// See https://github.com/RomRider/node-divoom-timebox-evo/blob/master/PROTOCOL.md#animations-images-and-text
-		var palette = new List<Color>();
-		var encodedImage = new List<byte>();
-		foreach (var pixel in image)
-		{
-			var paletteIndex = palette.IndexOf(pixel);
-			if (paletteIndex == -1)
-			{
-				palette.Add(pixel);
-				if (palette.Count > 256)
-				{
-					throw new NotSupportedException("More than 256 colors not supported.  Less color variety must be pre-calculated.");
-				}
-			}
-		}
-
-		// Hack (inefficiency)
-		// Pad the palette with black to ensure 8 bits per pixel.
-		while (palette.Count < 256)
-		{
-			palette.Add(Color.Black);
-		}
-
-		var bitsPerPixel = (int)Math.Ceiling(Math.Log(palette.Count, 2));
-
-		if (bitsPerPixel == 8)
-		{
-			foreach (var pixel in image)
-			{
-				encodedImage.Add((byte)palette.IndexOf(pixel));
-			}
-		}
-		else
-		{
-			encodedImage.Add(0);
-
-			var encodedImageByteIndex = 0;
-			var encodedImageByteBitIndex = 0;
-			foreach (var pixel in image)
-			{
-				var paletteIndex = (byte)palette.IndexOf(pixel);
-				for (var bitIndex = 0; bitIndex < bitsPerPixel; bitIndex++)
-				{
-					if (encodedImageByteBitIndex == 8)
-					{
-						encodedImage.Add(0);
-						encodedImageByteIndex++;
-						encodedImageByteBitIndex = 0;
-					}
-
-					var bit = (paletteIndex & (1 << bitIndex)) != 0;
-					if (bit)
-					{
-						encodedImage[encodedImageByteIndex] |= (byte)(1 << encodedImageByteBitIndex);
-					}
-
-					encodedImageByteBitIndex++;
-				}
-			}
-
-			// Reverse the order of the bits in each byte of encoded image
-			for (var i = 0; i < encodedImage.Count; i++)
-			{
-				encodedImage[i] = (byte)((encodedImage[i] * 0x0202020202UL & 0x010884422010UL) % 1023);
-			}
-		}
-
 		// 44000A0A04 AA LLLL 000000 NN COLOR_DATA PIXEL_DATA
 		// |<-HEAD->| |<-----------IMAGE_DATA-------------->|
 
@@ -530,42 +427,53 @@ internal sealed class BluetoothManager : IBluetooth
 		commandBuilder.Add(0x0a); // Fixed
 		commandBuilder.Add(0x04); // Fixed
 
-		// Image data
-		commandBuilder.Add(0xaa); // Image start
-
-		// Image length
-		var imageLength = 7 + palette.Count * 3 + encodedImage.Count;
-		commandBuilder.Add((byte)(imageLength & 0xff));
-		commandBuilder.Add((byte)(imageLength >> 8 & 0xff));
-
-		// Image type
-		commandBuilder.Add(0x00); // Fixed
-		commandBuilder.Add(0x00); // Fixed
-		commandBuilder.Add(0x00); // Fixed
-
-		// Number of colors
-		commandBuilder.Add((byte)(
-			palette.Count == 256
-				? 0
-				: palette.Count
-			)
-		);
-
-		// Color data
-		foreach (var color in palette)
+		var imageBytes = divoomImage.GetImageBytes();
+		foreach (var imageByte in imageBytes)
 		{
-			commandBuilder.Add(color.R);
-			commandBuilder.Add(color.G);
-			commandBuilder.Add(color.B);
-		};
-
-		// Pixel data
-		foreach (var pixel in encodedImage)
-		{
-			commandBuilder.Add(pixel);
+			commandBuilder.Add(imageByte);
 		}
 
 		return await SendCommandAsync(device, commandBuilder, cancellationToken);
+	}
+
+	public async Task<DeviceResponseSet> ViewAnimationAsync(
+		DivoomBluetoothDevice device,
+		DivoomAnimation animation,
+		CancellationToken cancellationToken)
+	{
+		var animationLength = animation.TotalFrameLength;
+
+		var packetIndex = 0;
+		while (true)
+		{
+			var commandBuilder = new CommandBuilder();
+
+			// HEAD
+			commandBuilder.Add((byte)Command.SetAnimationFrame);
+
+			// Animation length
+			commandBuilder.Add((byte)(animationLength & 0xff));
+			commandBuilder.Add((byte)(animationLength >> 8 & 0xff));
+
+			var frameDataBytes = animation.GetPacket(packetIndex);
+
+			if (frameDataBytes.Count == 0)
+			{
+				break;
+			}
+
+			commandBuilder.Add((byte)packetIndex++);
+
+			foreach (var frameDataByte in frameDataBytes)
+			{
+				commandBuilder.Add(frameDataByte);
+			}
+
+			var response = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		}
+
+		// TODO
+		return new DeviceResponseSet(new());
 	}
 
 	#endregion
@@ -579,9 +487,9 @@ internal sealed class BluetoothManager : IBluetooth
 	/// <param name="cancellationToken">The CancellationToken</param>
 	/// <returns></returns>
 	public async Task<DeviceResponseSet> ReadResponseAsync(
-		DivoomBluetoothDevice device,
-		TimeSpan readDelay,
-		CancellationToken cancellationToken)
+	DivoomBluetoothDevice device,
+	TimeSpan readDelay,
+	CancellationToken cancellationToken)
 	{
 		var stream = GetStream(device);
 

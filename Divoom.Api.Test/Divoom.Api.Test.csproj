@@ -30,4 +30,8 @@
 		<ProjectReference Include="..\Divoom.Api\Divoom.Api.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Animations\" />
+	</ItemGroup>
+
 </Project>

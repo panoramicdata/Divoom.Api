@@ -95,15 +95,6 @@ public interface IBluetooth
 		PowerState powerStatus,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponseSet> ViewCloudChannelAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken);
-
-	Task<DeviceResponseSet> ViewVjEffectAsync(
-		DivoomBluetoothDevice device,
-		VjEffectType vjEffectType,
-		CancellationToken cancellationToken);
-
 	Task<DeviceResponseSet> ViewVisualizationAsync(
 		DivoomBluetoothDevice device,
 		VisualizationType visualizationType,
@@ -111,6 +102,7 @@ public interface IBluetooth
 
 	Task<DeviceResponseSet> ViewAnimationAsync(
 		DivoomBluetoothDevice device,
+		DivoomAnimation divoomAnimation,
 		CancellationToken cancellationToken);
 
 	Task<DeviceResponseSet> ViewScoreboardAsync(
@@ -121,7 +113,7 @@ public interface IBluetooth
 
 	Task<DeviceResponseSet> ViewImageAsync(
 		DivoomBluetoothDevice device,
-		Color[] image,
+		DivoomImage image,
 		CancellationToken cancellationToken);
 
 	Task<DeviceResponseSet> ViewChannelAsync(

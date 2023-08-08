@@ -294,17 +294,6 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewCloudChannel_Succeeds()
-	{
-		var device = GetFirstDevice();
-		var deviceResponse = await Client
-			.Bluetooth
-			.ViewCloudChannelAsync(device, default);
-
-		deviceResponse.IsOk.Should().BeTrue();
-	}
-
-	[Fact]
 	public async void ViewLighting_Succeeds()
 	{
 		var device = GetFirstDevice();
@@ -319,23 +308,6 @@ public class BluetoothTests : Test
 				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
-	}
-
-	[Fact]
-	public async void ViewVjEffects_Succeeds()
-	{
-		var device = GetFirstDevice();
-		foreach (var vjEffectType in Enum.GetValues<VjEffectType>())
-		{
-			var deviceResponse = await Client.Bluetooth.ViewVjEffectAsync(
-				device,
-				vjEffectType,
-				default);
-
-			deviceResponse.IsOk.Should().BeTrue();
-
-			await Task.Delay(1000);
-		}
 	}
 
 	[Fact]
@@ -354,17 +326,6 @@ public class BluetoothTests : Test
 
 			await Task.Delay(1000);
 		}
-	}
-
-	[Fact]
-	public async void ViewAnimation_Succeeds()
-	{
-		var device = GetFirstDevice();
-		var deviceResponse = await Client
-			.Bluetooth
-			.ViewAnimationAsync(device, default);
-
-		deviceResponse.IsOk.Should().BeTrue();
 	}
 
 	[Fact]
@@ -465,7 +426,7 @@ public class BluetoothTests : Test
 	[Fact]
 	public async void ViewImage_Constructed_Succeeds()
 	{
-		var image = new Color[256];
+		var imageBytes = new Color[256];
 		var pixelIndex = 0;
 		for (var x = 0; x < 16; x++)
 		{
@@ -474,7 +435,7 @@ public class BluetoothTests : Test
 				var r = pixelIndex;
 				var g = x * 16;
 				var b = y * 16;
-				image[pixelIndex++] = Color.FromArgb(r, g, b);
+				imageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
 			}
 		}
 
@@ -484,7 +445,7 @@ public class BluetoothTests : Test
 			.Bluetooth
 			.ViewImageAsync(
 				device,
-				image,
+				new DivoomImage(imageBytes),
 				default
 			);
 
@@ -492,9 +453,60 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
+	public async void ViewAnimation_FromFile_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		var divoomAnimation = GetDivoomAnimation(new FileInfo("../../../Animations/ReportMagic.gif"));
+
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewAnimationAsync(
+				device,
+				divoomAnimation,
+				default);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+	private DivoomAnimation GetDivoomAnimation(FileInfo fileInfo)
+	{
+		var animation = new DivoomAnimation();
+		using var image = Image.Load<Rgb24>(fileInfo.FullName);
+		foreach (var frame in image.Frames)
+		{
+			var frameImageBytes = new Color[256];
+			var pixelIndex = 0;
+			frame.ProcessPixelRows(accessor =>
+			{
+				for (var y = 0; y < 16; y++)
+				{
+					Span<Rgb24> pixelRow = accessor.GetRowSpan(y);
+					for (var x = 0; x < 16; x++)
+					{
+						ref Rgb24 pixel = ref pixelRow[x];
+
+						var r = pixel.R;
+						var g = pixel.G;
+						var b = pixel.B;
+						frameImageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
+					}
+				}
+			});
+
+			var frameDelay = TimeSpan.FromMilliseconds(frame.Metadata.GetGifMetadata().FrameDelay * 10);
+			animation.AddFrame(
+				new DivoomImage(frameImageBytes),
+				frameDelay);
+		}
+
+		return animation;
+	}
+
+	[Fact]
 	public async void ViewImage_FromFile_Succeeds()
 	{
-		var image = new Color[256];
+		var imageBytes = new Color[256];
 		var pixelIndex = 0;
 		// Load PNG image from file using SixLabors.ImageSharp
 		using (var fileImage = Image.Load<Rgb24>("../../../Images/ReportMagic.png"))
@@ -516,7 +528,7 @@ public class BluetoothTests : Test
 						var r = pixel.R;
 						var g = pixel.G;
 						var b = pixel.B;
-						image[pixelIndex++] = Color.FromArgb(r, g, b);
+						imageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
 					}
 				}
 			});
@@ -528,7 +540,7 @@ public class BluetoothTests : Test
 			.Bluetooth
 			.ViewImageAsync(
 				device,
-				image,
+				new DivoomImage(imageBytes),
 				default
 			);
 
