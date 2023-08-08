@@ -472,6 +472,7 @@ public class BluetoothTests : Test
 	private DivoomAnimation GetDivoomAnimation(FileInfo fileInfo)
 	{
 		var animation = new DivoomAnimation();
+		var frameTime = TimeSpan.Zero;
 		using var image = Image.Load<Rgb24>(fileInfo.FullName);
 		foreach (var frame in image.Frames)
 		{
@@ -495,9 +496,10 @@ public class BluetoothTests : Test
 			});
 
 			var frameDelay = TimeSpan.FromMilliseconds(frame.Metadata.GetGifMetadata().FrameDelay * 10);
-			animation.AddFrame(
-				new DivoomImage(frameImageBytes),
-				frameDelay);
+
+			frameTime += frameDelay;
+
+			animation.AddFrame(new DivoomImage(frameImageBytes, frameTime));
 		}
 
 		return animation;

@@ -8,35 +8,33 @@ public class DivoomAnimation
 {
 	private readonly List<byte> _frameBytes = new();
 
-	private readonly List<int> _millisecondTimings = new();
-
-	public IReadOnlyList<int> MillisecondTiming => _millisecondTimings;
-
-	public int FrameCount { get; private set; }
-
-	public void AddFrame(
-		DivoomImage image,
-		TimeSpan timeSinceLastFrame)
+	public void AddFrame(DivoomImage image)
 	{
-		if (FrameCount == 0 && timeSinceLastFrame != TimeSpan.Zero)
+		if (_frameBytes.Count == 0 && image.FrameTimeMs != 0)
 		{
 			throw new ArgumentException(
-				$"The first frame must have a {nameof(timeSinceLastFrame)} of zero.",
-				nameof(timeSinceLastFrame));
+				$"The first frame must have a {nameof(image.FrameTimeMs)} of zero.",
+				nameof(image));
 		}
 
-		_millisecondTimings.Add((int)timeSinceLastFrame.TotalMilliseconds
-			+ FrameCount == 0 ? 0 : _millisecondTimings[^1]);
-
-		AddFrame(image);
-
-		FrameCount++;
-	}
-
-	private void AddFrame(DivoomImage image)
-	{
 		// AA LLLL TTTT RR NN COLOR_DATA PIXEL_DATA
+		var frameTime = image.FrameTimeMs;
+		var length = image.ImageSize + 6;
+
+		// Frame start
 		_frameBytes.Add(0xAA);
+
+		// Frame length
+		_frameBytes.Add((byte)(length & 0xFF));
+		_frameBytes.Add((byte)((length >> 8) & 0xFF));
+
+
+		_frameBytes.Add((byte)(frameTime & 0xFF));
+		_frameBytes.Add((byte)((frameTime >> 8) & 0xFF));
+
+		_frameBytes.AddRange(image.GetImageBytes());
+
+		TotalFrameLength += length;
 	}
 
 	internal List<byte> GetPacket(int packetIndex)
