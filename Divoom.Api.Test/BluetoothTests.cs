@@ -280,7 +280,7 @@ public class BluetoothTests : Test
 	{
 		var device = GetFirstDevice();
 
-		foreach (var channel in Enum.GetValues<Channel>())
+		foreach (var channel in Enum.GetValues<Models.Channel>())
 		{
 			var deviceResponseSet = await Client
 				.Bluetooth
@@ -291,6 +291,13 @@ public class BluetoothTests : Test
 
 			await Task.Delay(1000);
 		}
+
+		var deviceResponseSet2 = await Client
+			.Bluetooth
+			.ViewChannelAsync(
+				device,
+				Models.Channel.Scoreboard,
+				default);
 	}
 
 	[Fact]

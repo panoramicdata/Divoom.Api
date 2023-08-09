@@ -10,13 +10,6 @@ public class DivoomAnimation
 
 	public void AddFrame(DivoomImage image)
 	{
-		if (_frameBytes.Count == 0 && image.FrameTimeMs != 0)
-		{
-			throw new ArgumentException(
-				$"The first frame must have a {nameof(image.FrameTimeMs)} of zero.",
-				nameof(image));
-		}
-
 		// AA LLLL TTTT RR NN COLOR_DATA PIXEL_DATA
 		var frameTime = image.FrameTimeMs;
 		var length = image.ImageSize + 6;
