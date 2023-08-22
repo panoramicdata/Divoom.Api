@@ -234,18 +234,11 @@ internal sealed class BluetoothManager : IBluetooth
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.GetVolume);
 
-		try
-		{
-			var deviceReponseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		var deviceReponseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 
-			var deviceResponse = deviceReponseSet.Responses.Single();
+		var deviceResponse = deviceReponseSet.Responses.Single();
 
-			return deviceResponse.Bytes[0];
-		}
-		catch
-		{
-			return 3;
-		}
+		return deviceResponse.Bytes[0];
 	}
 
 	public async Task<MuteState> GetMuteStateAsync(

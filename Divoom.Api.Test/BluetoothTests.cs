@@ -13,7 +13,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void GetDivoomDevice_Succeeds()
+	public void GetDivoomDevice_Succeeds()
 	{
 		var device = GetFirstDevice();
 		device.Should().BeOfType<DivoomBluetoothDevice>();
@@ -389,7 +389,9 @@ public class BluetoothTests : Test
 	{
 		var device = GetFirstDevice();
 
-		var deviceSettings = await Client.Bluetooth.GetSettingsAsync(device, default);
+		var deviceSettings = await Client
+			.Bluetooth
+			.GetSettingsAsync(device, default);
 	}
 
 	[Fact]
