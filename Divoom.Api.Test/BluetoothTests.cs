@@ -12,14 +12,14 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void GetDivoomDevice_Succeeds()
+	public async Task GetDivoomDevice_Succeeds()
 	{
 		var device = GetFirstDevice();
 		device.Should().BeOfType<DivoomBluetoothDevice>();
 	}
 
 	[Fact]
-	public async void SetBrightness_Succeeds()
+	public async Task SetBrightness_Succeeds()
 	{
 		var device = GetFirstDevice();
 		// Set the brightness from 0% to 100% in steps of 10
@@ -30,7 +30,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void SetVolume_To2Then3_Succeeds()
+	public async Task SetVolume_To2Then3_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -56,7 +56,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void SetVolume_ToValuesOtherThan3_Succeeds()
+	public async Task SetVolume_ToValuesOtherThan3_Succeeds()
 	{
 		var device = GetFirstDevice();
 		// Set the volume from 0 to 16
@@ -107,7 +107,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void GetVolume_Succeeds()
+	public async Task GetVolume_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var volume = await Client
@@ -118,7 +118,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewTime_Succeeds()
+	public async Task ViewTime_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client.Bluetooth.ViewTimeAsync(
@@ -134,7 +134,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void SetWeather_Succeeds()
+	public async Task SetWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client.Bluetooth.SetWeatherAsync(
@@ -148,7 +148,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewCloudChannel_Succeeds()
+	public async Task ViewCloudChannel_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client.Bluetooth.ViewCloudChannelAsync(device, default);
@@ -157,7 +157,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewVjEffects_Succeeds()
+	public async Task ViewVjEffects_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponses = new List<DeviceResponse>();
@@ -176,7 +176,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewVisualization_Succeeds()
+	public async Task ViewVisualization_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponses = new List<DeviceResponse>();
@@ -195,7 +195,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewAnimation_Succeeds()
+	public async Task ViewAnimation_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client.Bluetooth.ViewAnimationAsync(device, default);
@@ -204,7 +204,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewWeather_Succeeds()
+	public async Task ViewWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -216,7 +216,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void GetSettings_Succeeds()
+	public async Task GetSettings_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -224,7 +224,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void SetDateTime_Succeeds()
+	public async Task SetDateTime_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client.Bluetooth.SetDateTimeAsync(device, DateTime.UtcNow.AddHours(1), default);
@@ -233,7 +233,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void SetTemperatureAndWeather_Succeeds()
+	public async Task SetTemperatureAndWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client.Bluetooth.SetTemperatureAndWeatherAsync(device, -1, WeatherType.Thunderstorm, default);
@@ -242,7 +242,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewScoreboard_Succeeds()
+	public async Task ViewScoreboard_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -265,7 +265,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async void ViewImageSucceeds()
+	public async Task ViewImageSucceeds()
 	{
 		var image = new Color[256];
 		var pixelIndex = 0;
