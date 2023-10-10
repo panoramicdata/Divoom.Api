@@ -9,14 +9,61 @@ namespace Divoom.Api.Interfaces;
 
 public interface IBluetooth
 {
+	#region Get
+
 	List<DivoomBluetoothDevice> GetDevices();
 
-	Task<DeviceResponse> SetBrightnessAsync(
+	Task<DeviceSettings> GetSettingsAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
+
+	Task<int> GetVolumeAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
+
+	Task<DeviceResponse> GetWeatherAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
+
+	Task<MuteState> GetMuteStateAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken);
+
+	#endregion
+
+	#region Set
+
+	Task<DeviceResponse> SetDateTimeAsync(
+		DivoomBluetoothDevice device,
+		DateTime dateTime,
+		CancellationToken cancellationToken);
+
+	Task<DeviceResponseSet> SetBrightnessAsync(
 		DivoomBluetoothDevice device,
 		int percent,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewTimeAsync(
+	Task<DeviceResponseSet> SetWeatherAsync(
+		DivoomBluetoothDevice device,
+		int temperature,
+		WeatherType weatherType,
+		CancellationToken cancellationToken);
+
+	Task SetVolumeAsync(
+		DivoomBluetoothDevice device,
+		int volume,
+		CancellationToken cancellationToken);
+
+	Task SetMuteStateAsync(
+		DivoomBluetoothDevice device,
+		MuteState muteState,
+		CancellationToken cancellationToken);
+
+	#endregion
+
+	#region View
+
+	Task<DeviceResponseSet> ViewClockAsync(
 		DivoomBluetoothDevice device,
 		TimeType timeType,
 		ClockType clockType,
@@ -25,69 +72,70 @@ public interface IBluetooth
 		bool showTemperature,
 		bool showCalendar,
 		Color color,
+		int brightnessPercent,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> SetDateTimeAsync(
+	public Task<DeviceResponse> ViewClock2Async(
 		DivoomBluetoothDevice device,
-		DateTime dateTime,
-		CancellationToken cancellationToken);
+		TimeType timeType,
+		ClockType clockType,
+		bool showTime,
+		bool showWeather,
+		bool showTemperature,
+		bool showCalendar,
+		Color color,
+		CancellationToken cancellationToken
+		);
 
-	Task<DeviceResponse> SetTemperatureAndWeatherAsync(
+	Task<DeviceResponseSet> ViewLightingAsync(
 		DivoomBluetoothDevice device,
-		int temperature,
-		WeatherType thunderstorm,
+		Color color,
+		int brightnessPercent,
+		LightingPattern lightingPattern,
+		PowerState powerStatus,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewWeatherAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken);
-
-	Task<DeviceResponse> ViewCloudChannelAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken);
-
-	Task<DeviceResponse> ViewVjEffectAsync(
-		DivoomBluetoothDevice device,
-		VjEffectType vjEffectType,
-		CancellationToken cancellationToken);
-
-	Task<DeviceResponse> ViewVisualizationAsync(
+	Task<DeviceResponseSet> ViewVisualizationAsync(
 		DivoomBluetoothDevice device,
 		VisualizationType visualizationType,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewAnimationAsync(
+	Task<DeviceResponseSet> ViewAnimationAsync(
 		DivoomBluetoothDevice device,
+		DivoomAnimation divoomAnimation,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> SetWeatherAsync(
-		DivoomBluetoothDevice device,
-		Color color,
-		int brightnessPercent,
-		WeatherType weatherType,
-		CancellationToken cancellationToken);
-
-	Task<DeviceResponse> ViewScoreboardAsync(
+	Task<DeviceResponseSet> ViewScoreboardAsync(
 		DivoomBluetoothDevice device,
 		int redScore,
 		int blueScore,
 		CancellationToken cancellationToken);
 
-	Task<DeviceSettings> GetSettingsAsync(
+	Task<DeviceResponseSet> ViewImageAsync(
+		DivoomBluetoothDevice device,
+		DivoomImage image,
+		CancellationToken cancellationToken);
+
+	Task<DeviceResponseSet> ViewChannelAsync(
+		DivoomBluetoothDevice device,
+		Channel channel,
+		CancellationToken cancellationToken);
+
+	Task<DeviceResponseSet> ViewStopwatchAsync(
+		DivoomBluetoothDevice device,
+		TimeSpan timeSpan,
+		CancellationToken cancellationToken);
+
+	Task SetTemperatureUnitAsync(
+		DivoomBluetoothDevice device,
+		TemperatureUnit temperatureUnit,
+		CancellationToken cancellationToken);
+
+	Task<TemperatureUnit> GetTemperatureUnitAsync(
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 
-	Task<DeviceResponse> ViewImageAsync(
-		DivoomBluetoothDevice device,
-		Color[] image,
-		CancellationToken cancellationToken);
+	Task<DeviceResponseSet> ReadResponseAsync(DivoomBluetoothDevice device, TimeSpan readDelay, CancellationToken cancellationToken);
 
-	Task SetVolumeAsync(
-		DivoomBluetoothDevice device,
-		int volume,
-		CancellationToken cancellationToken);
-
-	Task<int> GetVolumeAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken);
+	#endregion
 }

@@ -13,14 +13,14 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public Task GetDivoomDevice_Succeeds()
+	public void GetDivoomDevice_Succeeds()
 	{
 		var device = GetFirstDevice();
 		device.Should().BeOfType<DivoomBluetoothDevice>();
 	}
 
 	[Fact]
-	public async Task SetBrightness_Succeeds()
+	public async void SetBrightness_Succeeds()
 	{
 		var device = GetFirstDevice();
 		// Set the brightness from 0% to 100% in steps of 10
@@ -35,7 +35,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task SetVolume_To2Then3_Succeeds()
+	public async void SetVolume_To2Then3_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -61,7 +61,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task SetVolume_ToValuesOtherThan3_Succeeds()
+	public async void SetVolume_ToValuesOtherThan3_Succeeds()
 	{
 		var device = GetFirstDevice();
 		// Set the volume from 0 to 16
@@ -95,7 +95,7 @@ public class BluetoothTests : Test
 	[Theory]
 	[InlineData(-1)]
 	[InlineData(17)]
-	public async Task SetVolume_Fails_OutsideRange(int illegalVolume)
+	public async void SetVolume_Fails_OutsideRange(int illegalVolume)
 	{
 		var device = GetFirstDevice();
 		try
@@ -112,7 +112,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task GetVolume_Succeeds()
+	public async void GetVolume_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var volume = await Client
@@ -124,7 +124,7 @@ public class BluetoothTests : Test
 
 
 	[Fact]
-	public async Task GetOutput_Succeeds()
+	public async void GetOutput_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponseSet = await Client
@@ -133,7 +133,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task GetMuteState_Succeeds()
+	public async void GetMuteState_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var muteState = await Client
@@ -142,7 +142,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task SetMuteState_Succeeds()
+	public async void SetMuteState_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -154,7 +154,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task SetTemperatureUnit_Succeeds()
+	public async void SetTemperatureUnit_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -188,7 +188,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task GetWeather_Succeeds()
+	public async void GetWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
@@ -199,7 +199,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewTime_Succeeds()
+	public async void ViewTime_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponseSet = await Client
@@ -218,7 +218,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewClockAsync_Succeeds()
+	public async void ViewClockAsync_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
@@ -239,7 +239,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewClockAsync_JustClock_Succeeds()
+	public async void ViewClockAsync_JustClock_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
@@ -259,7 +259,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task SetWeatherAsync_Succeeds()
+	public async void SetWeatherAsync_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponseSet = await Client
@@ -276,7 +276,7 @@ public class BluetoothTests : Test
 
 
 	[Fact]
-	public async Task ViewChannel_Succeeds()
+	public async void ViewChannel_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -301,7 +301,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewLighting_Succeeds()
+	public async void ViewLighting_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
@@ -318,7 +318,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewVisualization_Succeeds()
+	public async void ViewVisualization_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponses = new List<DeviceResponse>();
@@ -336,7 +336,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewStopwatch_Succeeds()
+	public async void ViewStopwatch_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
@@ -350,7 +350,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewWeather_Succeeds()
+	public async void ViewWeather_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -385,7 +385,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task GetSettings_Succeeds()
+	public async void GetSettings_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -395,7 +395,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task SetDateTime_Succeeds()
+	public async void SetDateTime_Succeeds()
 	{
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
@@ -410,7 +410,7 @@ public class BluetoothTests : Test
 
 
 	[Fact]
-	public async Task ViewScoreboard_Succeeds()
+	public async void ViewScoreboard_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -433,7 +433,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewImage_Constructed_Succeeds()
+	public async void ViewImage_Constructed_Succeeds()
 	{
 		var imageBytes = new Color[256];
 		var pixelIndex = 0;
@@ -462,7 +462,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewAnimation_FromFile_Succeeds()
+	public async void ViewAnimation_FromFile_Succeeds()
 	{
 		var device = GetFirstDevice();
 
@@ -515,7 +515,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewImage_FromFile_Succeeds()
+	public async void ViewImage_FromFile_Succeeds()
 	{
 		var imageBytes = new Color[256];
 		var pixelIndex = 0;
