@@ -11,7 +11,7 @@ public class ChannelTests : Test
 	}
 
 	[Fact]
-	public async void SetDialAsync_Succeeds()
+	public async Task SetDialAsync_Succeeds()
 	{
 		var response = await Client.Channel.SetDialAsync(new Models.SetDialRequest { DialId = 0 }, default);
 		response.Should().NotBeNull();
@@ -19,7 +19,7 @@ public class ChannelTests : Test
 	}
 
 	[Fact]
-	public async void GetDialInfoAsync_Succeeds()
+	public async Task GetDialInfoAsync_Succeeds()
 	{
 		var response = await Client.Channel.GetDialInfoAsync(new(), default);
 		response.Should().NotBeNull();
@@ -34,7 +34,7 @@ public class ChannelTests : Test
 	[InlineData(1)]
 	[InlineData(2)]
 	[InlineData(3)]
-	public async void SetAsync_Succeeds(int index)
+	public async Task SetAsync_Succeeds(int index)
 	{
 		var response = await Client.Channel.SetAsync(new SetChannelRequest
 		{

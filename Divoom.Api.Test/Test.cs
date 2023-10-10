@@ -13,7 +13,7 @@ public abstract class Test
 
 	protected DivoomClient Client { get; }
 
-	public Test(ITestOutputHelper testOutputHelper)
+	protected Test(ITestOutputHelper testOutputHelper)
 	{
 		Logger = testOutputHelper.BuildLogger();
 		Client = new DivoomClient(GetDivoomClientOptions(), Logger);

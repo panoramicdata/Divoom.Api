@@ -157,7 +157,7 @@ internal sealed class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)Command.SetVolume);
 		commandBuilder.Add((byte)volume);
 
-		var response = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
 	#endregion
