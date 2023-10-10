@@ -1,7 +1,8 @@
 ﻿using Divoom.Api.Models;
 using FluentAssertions;
-using System.Drawing;
 using Xunit.Abstractions;
+using Color = System.Drawing.Color;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Divoom.Api.Test;
 
@@ -12,7 +13,7 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task GetDivoomDevice_Succeeds()
+	public Task GetDivoomDevice_Succeeds()
 	{
 		var device = GetFirstDevice();
 		device.Should().BeOfType<DivoomBluetoothDevice>();
@@ -25,7 +26,11 @@ public class BluetoothTests : Test
 		// Set the brightness from 0% to 100% in steps of 10
 		for (var brightness = 0; brightness <= 100; brightness += 10)
 		{
-			var deviceResponse = await Client.Bluetooth.SetBrightnessAsync(device, brightness, default);
+			var deviceResponse = await Client
+				.Bluetooth
+				.SetBrightnessAsync(device, brightness, default);
+
+			deviceResponse.IsOk.Should().BeTrue();
 		}
 	}
 
@@ -90,7 +95,7 @@ public class BluetoothTests : Test
 	[Theory]
 	[InlineData(-1)]
 	[InlineData(17)]
-	public async void SetVolume_Fails_OutsideRange(int illegalVolume)
+	public async Task SetVolume_Fails_OutsideRange(int illegalVolume)
 	{
 		var device = GetFirstDevice();
 		try
@@ -117,62 +122,199 @@ public class BluetoothTests : Test
 		volume.Should().BeInRange(0, 16);
 	}
 
+
+	[Fact]
+	public async Task GetOutput_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponseSet = await Client
+			.Bluetooth
+			.ReadResponseAsync(device, TimeSpan.FromMilliseconds(5000), default);
+	}
+
+	[Fact]
+	public async Task GetMuteState_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var muteState = await Client
+			.Bluetooth
+			.GetMuteStateAsync(device, default);
+	}
+
+	[Fact]
+	public async Task SetMuteState_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		await Client
+			.Bluetooth
+			.SetMuteStateAsync(device,
+				MuteState.Muted,
+				default);
+	}
+
+	[Fact]
+	public async Task SetTemperatureUnit_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		await Client
+			.Bluetooth
+			.SetTemperatureUnitAsync(device,
+				TemperatureUnit.Farenheit,
+				default);
+
+		var refetchedTemperatureUnit = await Client
+			.Bluetooth
+			.GetTemperatureUnitAsync(device, default);
+
+		refetchedTemperatureUnit
+			.Should()
+			.Be(TemperatureUnit.Farenheit);
+
+		await Client
+			.Bluetooth
+			.SetTemperatureUnitAsync(device,
+				TemperatureUnit.Celsius,
+				default);
+
+		refetchedTemperatureUnit = await Client
+			.Bluetooth
+			.GetTemperatureUnitAsync(device, default);
+
+		refetchedTemperatureUnit
+			.Should()
+			.Be(TemperatureUnit.Celsius);
+	}
+
+	[Fact]
+	public async Task GetWeather_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.GetWeatherAsync(device, default);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
 	[Fact]
 	public async Task ViewTime_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewTimeAsync(
-			device,
-			TimeType.TwentyFourHours,
-			ClockType.FullScreenNegative,
-			true,
-			false,
-			false,
-			false,
-			Color.Red,
-			default);
-	}
-
-	[Fact]
-	public async Task SetWeather_Succeeds()
-	{
-		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.SetWeatherAsync(
-			device,
-			Color.Red,
-			100,
-			WeatherType.Snow,
-			default);
-
-		deviceResponse.IsOk.Should().BeTrue();
-	}
-
-	[Fact]
-	public async Task ViewCloudChannel_Succeeds()
-	{
-		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewCloudChannelAsync(device, default);
-
-		deviceResponse.IsOk.Should().BeTrue();
-	}
-
-	[Fact]
-	public async Task ViewVjEffects_Succeeds()
-	{
-		var device = GetFirstDevice();
-		var deviceResponses = new List<DeviceResponse>();
-		foreach (var vjEffectType in Enum.GetValues<VjEffectType>())
-		{
-			var deviceResponse = await Client.Bluetooth.ViewVjEffectAsync(
+		var deviceResponseSet = await Client
+			.Bluetooth
+			.ViewClockAsync(
 				device,
-				vjEffectType,
+				TimeType.TwentyFourHours,
+				ClockType.FullScreenNegative,
+				false,
+				true,
+				false,
+				false,
+				Color.Red,
+				100,
+				default);
+	}
+
+	[Fact]
+	public async Task ViewClockAsync_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewClockAsync(
+				device,
+				TimeType.TwentyFourHours,
+				ClockType.FullScreenNegative,
+				true,
+				true,
+				true,
+				true,
+				Color.Blue,
+				100,
 				default);
 
-			deviceResponse.IsOk.Should().BeTrue();
+		deviceResponse.IsOk.Should().BeTrue();
+	}
 
-			deviceResponses.Add(deviceResponse);
+	[Fact]
+	public async Task ViewClockAsync_JustClock_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewClock2Async(
+				device,
+				TimeType.TwelveHours,
+				ClockType.FullScreen,
+				false,
+				false,
+				false,
+				true,
+				Color.Yellow,
+				default);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+	[Fact]
+	public async Task SetWeatherAsync_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponseSet = await Client
+			.Bluetooth
+			.SetWeatherAsync(
+				device,
+				30,
+				WeatherType.Clear,
+				default
+			);
+
+		deviceResponseSet.IsOk.Should().BeTrue();
+	}
+
+
+	[Fact]
+	public async Task ViewChannel_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		foreach (var channel in Enum.GetValues<Models.Channel>())
+		{
+			var deviceResponseSet = await Client
+				.Bluetooth
+				.ViewChannelAsync(
+					device,
+					channel,
+					default);
+
 			await Task.Delay(1000);
 		}
+
+		var deviceResponseSet2 = await Client
+			.Bluetooth
+			.ViewChannelAsync(
+				device,
+				Models.Channel.Scoreboard,
+				default);
+	}
+
+	[Fact]
+	public async Task ViewLighting_Succeeds()
+	{
+		var device = GetFirstDevice();
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewLightingAsync(
+				device,
+				Color.Magenta,
+				100,
+				LightingPattern.Custom,
+				PowerState.On,
+				default);
+
+		deviceResponse.IsOk.Should().BeTrue();
 	}
 
 	[Fact]
@@ -189,16 +331,20 @@ public class BluetoothTests : Test
 
 			deviceResponse.IsOk.Should().BeTrue();
 
-			deviceResponses.Add(deviceResponse);
 			await Task.Delay(1000);
 		}
 	}
 
 	[Fact]
-	public async Task ViewAnimation_Succeeds()
+	public async Task ViewStopwatch_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.ViewAnimationAsync(device, default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewStopwatchAsync(
+				device,
+				TimeSpan.FromMinutes(1),
+				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -208,11 +354,34 @@ public class BluetoothTests : Test
 	{
 		var device = GetFirstDevice();
 
-		var deviceResponse = await Client.Bluetooth.SetTemperatureAndWeatherAsync(device, -1, WeatherType.Thunderstorm, default);
-
-		deviceResponse = await Client.Bluetooth.ViewWeatherAsync(device, default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.SetWeatherAsync(
+				device,
+				-1,
+				WeatherType.Thunderstorm,
+				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
+
+		var deviceResponseSet = await Client
+			.Bluetooth
+			.ViewClockAsync(
+				device,
+				TimeType.TwelveHours,
+				ClockType.AnalogRound,
+				true,
+				false,
+				false,
+				false,
+				Color.Blue,
+				100,
+				default);
+
+		deviceResponseSet
+			.IsOk
+			.Should()
+			.BeTrue();
 	}
 
 	[Fact]
@@ -220,26 +389,25 @@ public class BluetoothTests : Test
 	{
 		var device = GetFirstDevice();
 
-		var deviceSettings = await Client.Bluetooth.GetSettingsAsync(device, default);
+		var deviceSettings = await Client
+			.Bluetooth
+			.GetSettingsAsync(device, default);
 	}
 
 	[Fact]
 	public async Task SetDateTime_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.SetDateTimeAsync(device, DateTime.UtcNow.AddHours(1), default);
+		var deviceResponse = await Client
+			.Bluetooth
+			.SetDateTimeAsync(
+				device,
+				DateTime.UtcNow.AddHours(1),
+				default);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
 
-	[Fact]
-	public async Task SetTemperatureAndWeather_Succeeds()
-	{
-		var device = GetFirstDevice();
-		var deviceResponse = await Client.Bluetooth.SetTemperatureAndWeatherAsync(device, -1, WeatherType.Thunderstorm, default);
-
-		deviceResponse.IsOk.Should().BeTrue();
-	}
 
 	[Fact]
 	public async Task ViewScoreboard_Succeeds()
@@ -265,18 +433,18 @@ public class BluetoothTests : Test
 	}
 
 	[Fact]
-	public async Task ViewImageSucceeds()
+	public async Task ViewImage_Constructed_Succeeds()
 	{
-		var image = new Color[256];
+		var imageBytes = new Color[256];
 		var pixelIndex = 0;
 		for (var x = 0; x < 16; x++)
 		{
 			for (var y = 0; y < 16; y++)
 			{
-				var r = x % 2 == 0 ? 0x00 : 0xff;
-				var g = y % 2 == 0 ? 0x00 : 0xff;
-				var b = (byte)(x * 16);
-				image[pixelIndex++] = Color.FromArgb(r, g, b);
+				var r = pixelIndex;
+				var g = x * 16;
+				var b = y * 16;
+				imageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
 			}
 		}
 
@@ -286,7 +454,104 @@ public class BluetoothTests : Test
 			.Bluetooth
 			.ViewImageAsync(
 				device,
-				image,
+				new DivoomImage(imageBytes),
+				default
+			);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+	[Fact]
+	public async Task ViewAnimation_FromFile_Succeeds()
+	{
+		var device = GetFirstDevice();
+
+		var divoomAnimation = GetDivoomAnimation(new FileInfo("../../../Animations/ReportMagic.gif"));
+
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewAnimationAsync(
+				device,
+				divoomAnimation,
+				default);
+
+		deviceResponse.IsOk.Should().BeTrue();
+	}
+
+	private DivoomAnimation GetDivoomAnimation(FileInfo fileInfo)
+	{
+		var animation = new DivoomAnimation();
+		var frameTime = TimeSpan.Zero;
+		using var image = Image.Load<Rgb24>(fileInfo.FullName);
+		foreach (var frame in image.Frames)
+		{
+			var frameImageBytes = new Color[256];
+			var pixelIndex = 0;
+			frame.ProcessPixelRows(accessor =>
+			{
+				for (var y = 0; y < 16; y++)
+				{
+					Span<Rgb24> pixelRow = accessor.GetRowSpan(y);
+					for (var x = 0; x < 16; x++)
+					{
+						ref Rgb24 pixel = ref pixelRow[x];
+
+						var r = pixel.R;
+						var g = pixel.G;
+						var b = pixel.B;
+						frameImageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
+					}
+				}
+			});
+
+			var frameDelay = TimeSpan.FromMilliseconds(frame.Metadata.GetGifMetadata().FrameDelay * 10);
+
+			frameTime += frameDelay;
+
+			animation.AddFrame(new DivoomImage(frameImageBytes, frameTime));
+		}
+
+		return animation;
+	}
+
+	[Fact]
+	public async Task ViewImage_FromFile_Succeeds()
+	{
+		var imageBytes = new Color[256];
+		var pixelIndex = 0;
+		// Load PNG image from file using SixLabors.ImageSharp
+		using (var fileImage = Image.Load<Rgb24>("../../../Images/ReportMagic.png"))
+		{
+			if (fileImage.Width != 16 && fileImage.Height != 16)
+			{
+				fileImage.Mutate(x => x.Resize(16, 16));
+			}
+
+			fileImage.ProcessPixelRows(accessor =>
+			{
+				for (var y = 0; y < 16; y++)
+				{
+					Span<Rgb24> pixelRow = accessor.GetRowSpan(y);
+					for (var x = 0; x < 16; x++)
+					{
+						ref Rgb24 pixel = ref pixelRow[x];
+
+						var r = pixel.R;
+						var g = pixel.G;
+						var b = pixel.B;
+						imageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
+					}
+				}
+			});
+		}
+
+		var device = GetFirstDevice();
+
+		var deviceResponse = await Client
+			.Bluetooth
+			.ViewImageAsync(
+				device,
+				new DivoomImage(imageBytes),
 				default
 			);
 
