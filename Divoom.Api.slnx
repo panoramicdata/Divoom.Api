@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Postman/">
+    <File Path="Postman/Divoom.postman_collection.json" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+    <File Path="version.json" />
+  </Folder>
+  <Project Path="Divoom.Api.Test/Divoom.Api.Test.csproj" />
+  <Project Path="Divoom.Api/Divoom.Api.csproj" />
+</Solution>

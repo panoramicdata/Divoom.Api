@@ -7,22 +7,15 @@ using System.Threading.Tasks;
 
 namespace Divoom.Api;
 
-internal sealed class DivoomHttpClientHandler : HttpClientHandler
+internal sealed class DivoomHttpClientHandler(
+	DivoomClientOptions options,
+	DivoomClient DivoomClient,
+	ILogger logger) : HttpClientHandler
 {
-	private readonly DivoomClientOptions _options;
-	private readonly DivoomClient _DivoomClient;
-	private readonly ILogger _logger;
+	private readonly DivoomClientOptions _options = options;
+	private readonly DivoomClient _DivoomClient = DivoomClient;
+	private readonly ILogger _logger = logger;
 	private readonly LogLevel _levelToLogAt = LogLevel.Trace;
-
-	public DivoomHttpClientHandler(
-		DivoomClientOptions options,
-		DivoomClient DivoomClient,
-		ILogger logger)
-	{
-		_options = options;
-		_DivoomClient = DivoomClient;
-		_logger = logger;
-	}
 
 	protected override async Task<HttpResponseMessage> SendAsync(
 		HttpRequestMessage request,

@@ -2,9 +2,6 @@
 
 namespace Divoom.Api.Exceptions;
 
-public class DivoomBadRequestException : Exception
+public class DivoomBadRequestException(string message) : Exception(message)
 {
-	public DivoomBadRequestException(string message) : base(message)
-	{
-	}
 }

@@ -1,19 +1,14 @@
+using AwesomeAssertions;
 using Divoom.Api.Models;
-using FluentAssertions;
-using Xunit.Abstractions;
 
 namespace Divoom.Api.Test;
 
-public class GzTests : Test
+public class GzTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper)
 {
-	public GzTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-	{
-	}
-
 	[Fact]
 	public async Task GetDialTypesAsync_Succeeds()
 	{
-		var response = await Client.Gz.GetDialTypesAsync(default);
+		var response = await Client.Gz.GetDialTypesAsync(CancellationToken);
 		response.Should().NotBeNull();
 		response.ReturnCode.Should().Be(0);
 		response.DialTypes.Should().NotBeEmpty();
@@ -22,7 +17,7 @@ public class GzTests : Test
 	[Fact]
 	public async Task GetLanDevicesAsync_Succeeds()
 	{
-		var response = await Client.Gz.GetLanDevicesAsync(default);
+		var response = await Client.Gz.GetLanDevicesAsync(CancellationToken);
 		response.Should().NotBeNull();
 		response.ReturnCode.Should().Be(0);
 		response.Devices.Should().NotBeEmpty();
@@ -35,7 +30,7 @@ public class GzTests : Test
 		{
 			Type = "Social",
 			Page = 1
-		}, default);
+		}, CancellationToken);
 		response.Should().NotBeNull();
 		response.ReturnCode.Should().Be(0);
 		response.Dials.Should().NotBeEmpty();
@@ -44,7 +39,7 @@ public class GzTests : Test
 	[Fact]
 	public async Task GetDialFontsAsync_Succeeds()
 	{
-		var response = await Client.Gz.GetDialFontsAsync(default);
+		var response = await Client.Gz.GetDialFontsAsync(CancellationToken);
 		response.Should().NotBeNull();
 		response.ReturnCode.Should().Be(0);
 		response.Fonts.Should().NotBeEmpty();
@@ -57,7 +52,7 @@ public class GzTests : Test
 		{
 			DeviceId = Client.Options.DeviceId,
 			DeviceMac = Client.Options.DeviceMac
-		}, default);
+		}, CancellationToken);
 		response.Should().NotBeNull();
 		response.ReturnCode.Should().Be(0);
 		response.DeviceId.Should().NotBe(0);
@@ -71,7 +66,7 @@ public class GzTests : Test
 		{
 			DeviceId = Client.Options.DeviceId,
 			DeviceMac = Client.Options.DeviceMac
-		}, default);
+		}, CancellationToken);
 		response.Should().NotBeNull();
 		response.ReturnCode.Should().Be(0);
 		response.DeviceId.Should().NotBe(0);

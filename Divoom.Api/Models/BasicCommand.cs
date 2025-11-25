@@ -4,13 +4,8 @@ using System.Runtime.Serialization;
 namespace Divoom.Api.Models;
 
 [DataContract]
-public abstract class BasicCommand : ICommand
+public abstract class BasicCommand(string command) : ICommand
 {
-	protected BasicCommand(string command)
-	{
-		Command = command;
-	}
-
 	[DataMember(Name = "Command")]
-	public string Command { get; }
+	public string Command { get; } = command;
 }

@@ -1,17 +1,15 @@
-﻿using Divoom.Api.Models;
-using FluentAssertions;
-using Xunit.Abstractions;
+﻿using AwesomeAssertions;
+using Divoom.Api.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using Color = System.Drawing.Color;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Divoom.Api.Test;
 
-public class BluetoothTests : Test
+public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper)
 {
-	public BluetoothTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-	{
-	}
-
 	[Fact]
 	public void GetDivoomDevice_Succeeds()
 	{
@@ -28,7 +26,7 @@ public class BluetoothTests : Test
 		{
 			var deviceResponse = await Client
 				.Bluetooth
-				.SetBrightnessAsync(device, brightness, default);
+				.SetBrightnessAsync(device, brightness, CancellationToken);
 
 			deviceResponse.IsOk.Should().BeTrue();
 		}
@@ -41,21 +39,21 @@ public class BluetoothTests : Test
 
 		await Client
 			.Bluetooth
-			.SetVolumeAsync(device, 2, default);
+			.SetVolumeAsync(device, 2, CancellationToken);
 
 		var volumeRefetch = await Client
 			.Bluetooth
-			.GetVolumeAsync(device, default);
+			.GetVolumeAsync(device, CancellationToken);
 
 		volumeRefetch.Should().Be(2);
 
 		await Client
 			.Bluetooth
-			.SetVolumeAsync(device, 3, default);
+			.SetVolumeAsync(device, 3, CancellationToken);
 
 		volumeRefetch = await Client
 			.Bluetooth
-			.GetVolumeAsync(device, default);
+			.GetVolumeAsync(device, CancellationToken);
 
 		volumeRefetch.Should().Be(3);
 	}
@@ -74,11 +72,11 @@ public class BluetoothTests : Test
 
 			await Client
 				.Bluetooth
-				.SetVolumeAsync(device, volume, default);
+				.SetVolumeAsync(device, volume, CancellationToken);
 
 			var volumeRefetch = await Client
 				.Bluetooth
-				.GetVolumeAsync(device, default);
+				.GetVolumeAsync(device, CancellationToken);
 
 			if (volume == 16)
 			{
@@ -101,7 +99,7 @@ public class BluetoothTests : Test
 		{
 			await Client
 				.Bluetooth
-				.SetVolumeAsync(device, illegalVolume, default);
+				.SetVolumeAsync(device, illegalVolume, CancellationToken);
 			throw new InvalidOperationException("Should have thrown an exception");
 		}
 		catch (ArgumentOutOfRangeException)
@@ -117,7 +115,7 @@ public class BluetoothTests : Test
 		var device = GetFirstDevice();
 		var volume = await Client
 			.Bluetooth
-			.GetVolumeAsync(device, default);
+			.GetVolumeAsync(device, CancellationToken);
 
 		volume.Should().BeInRange(0, 16);
 	}
@@ -129,7 +127,8 @@ public class BluetoothTests : Test
 		var device = GetFirstDevice();
 		var deviceResponseSet = await Client
 			.Bluetooth
-			.ReadResponseAsync(device, TimeSpan.FromMilliseconds(5000), default);
+			.ReadResponseAsync(device, TimeSpan.FromMilliseconds(5000), CancellationToken);
+		_ = deviceResponseSet.Should().NotBeNull();
 	}
 
 	[Fact]
@@ -138,7 +137,8 @@ public class BluetoothTests : Test
 		var device = GetFirstDevice();
 		var muteState = await Client
 			.Bluetooth
-			.GetMuteStateAsync(device, default);
+			.GetMuteStateAsync(device, CancellationToken);
+		muteState.Should().BeOneOf(MuteState.Muted, MuteState.Unmuted);
 	}
 
 	[Fact]
@@ -150,7 +150,7 @@ public class BluetoothTests : Test
 			.Bluetooth
 			.SetMuteStateAsync(device,
 				MuteState.Muted,
-				default);
+				CancellationToken);
 	}
 
 	[Fact]
@@ -162,11 +162,11 @@ public class BluetoothTests : Test
 			.Bluetooth
 			.SetTemperatureUnitAsync(device,
 				TemperatureUnit.Farenheit,
-				default);
+				CancellationToken);
 
 		var refetchedTemperatureUnit = await Client
 			.Bluetooth
-			.GetTemperatureUnitAsync(device, default);
+			.GetTemperatureUnitAsync(device, CancellationToken);
 
 		refetchedTemperatureUnit
 			.Should()
@@ -176,11 +176,11 @@ public class BluetoothTests : Test
 			.Bluetooth
 			.SetTemperatureUnitAsync(device,
 				TemperatureUnit.Celsius,
-				default);
+				CancellationToken);
 
 		refetchedTemperatureUnit = await Client
 			.Bluetooth
-			.GetTemperatureUnitAsync(device, default);
+			.GetTemperatureUnitAsync(device, CancellationToken);
 
 		refetchedTemperatureUnit
 			.Should()
@@ -193,7 +193,7 @@ public class BluetoothTests : Test
 		var device = GetFirstDevice();
 		var deviceResponse = await Client
 			.Bluetooth
-			.GetWeatherAsync(device, default);
+			.GetWeatherAsync(device, CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -214,7 +214,7 @@ public class BluetoothTests : Test
 				false,
 				Color.Red,
 				100,
-				default);
+				CancellationToken);
 	}
 
 	[Fact]
@@ -233,7 +233,7 @@ public class BluetoothTests : Test
 				true,
 				Color.Blue,
 				100,
-				default);
+				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -253,7 +253,7 @@ public class BluetoothTests : Test
 				false,
 				true,
 				Color.Yellow,
-				default);
+				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -268,7 +268,7 @@ public class BluetoothTests : Test
 				device,
 				30,
 				WeatherType.Clear,
-				default
+				CancellationToken
 			);
 
 		deviceResponseSet.IsOk.Should().BeTrue();
@@ -287,17 +287,21 @@ public class BluetoothTests : Test
 				.ViewChannelAsync(
 					device,
 					channel,
-					default);
+					CancellationToken);
 
-			await Task.Delay(1000);
+			deviceResponseSet.IsOk.Should().BeTrue();
+
+			await Task.Delay(1000, CancellationToken);
 		}
 
 		var deviceResponseSet2 = await Client
 			.Bluetooth
 			.ViewChannelAsync(
 				device,
-				Models.Channel.Scoreboard,
-				default);
+				Channel.Scoreboard,
+				CancellationToken);
+
+		deviceResponseSet2.IsOk.Should().BeTrue();
 	}
 
 	[Fact]
@@ -312,7 +316,7 @@ public class BluetoothTests : Test
 				100,
 				LightingPattern.Custom,
 				PowerState.On,
-				default);
+				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -321,17 +325,16 @@ public class BluetoothTests : Test
 	public async Task ViewVisualization_Succeeds()
 	{
 		var device = GetFirstDevice();
-		var deviceResponses = new List<DeviceResponse>();
 		foreach (var visualizationType in Enum.GetValues<VisualizationType>())
 		{
 			var deviceResponse = await Client.Bluetooth.ViewVisualizationAsync(
 				device,
 				visualizationType,
-				default);
+				CancellationToken);
 
 			deviceResponse.IsOk.Should().BeTrue();
 
-			await Task.Delay(1000);
+			await Task.Delay(1000, CancellationToken);
 		}
 	}
 
@@ -344,7 +347,7 @@ public class BluetoothTests : Test
 			.ViewStopwatchAsync(
 				device,
 				TimeSpan.FromMinutes(1),
-				default);
+				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -360,7 +363,7 @@ public class BluetoothTests : Test
 				device,
 				-1,
 				WeatherType.Thunderstorm,
-				default);
+				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 
@@ -376,7 +379,7 @@ public class BluetoothTests : Test
 				false,
 				Color.Blue,
 				100,
-				default);
+				CancellationToken);
 
 		deviceResponseSet
 			.IsOk
@@ -391,7 +394,7 @@ public class BluetoothTests : Test
 
 		_ = await Client
 			.Bluetooth
-			.GetSettingsAsync(device, default);
+			.GetSettingsAsync(device, CancellationToken);
 	}
 
 	[Fact]
@@ -403,7 +406,7 @@ public class BluetoothTests : Test
 			.SetDateTimeAsync(
 				device,
 				DateTime.UtcNow.AddHours(1),
-				default);
+				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
@@ -423,11 +426,11 @@ public class BluetoothTests : Test
 					.ViewScoreboardAsync(
 						device,
 						redScore,
-						blueScore, default);
+						blueScore, CancellationToken);
 
 				deviceResponse.IsOk.Should().BeTrue();
 
-				await Task.Delay(1000);
+				await Task.Delay(1000, CancellationToken);
 			}
 		}
 	}
@@ -455,7 +458,7 @@ public class BluetoothTests : Test
 			.ViewImageAsync(
 				device,
 				new DivoomImage(imageBytes),
-				default
+				CancellationToken
 			);
 
 		deviceResponse.IsOk.Should().BeTrue();
@@ -473,12 +476,12 @@ public class BluetoothTests : Test
 			.ViewAnimationAsync(
 				device,
 				divoomAnimation,
-				default);
+				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
 	}
 
-	private DivoomAnimation GetDivoomAnimation(FileInfo fileInfo)
+	private static DivoomAnimation GetDivoomAnimation(FileInfo fileInfo)
 	{
 		var animation = new DivoomAnimation();
 		var frameTime = TimeSpan.Zero;
@@ -552,7 +555,7 @@ public class BluetoothTests : Test
 			.ViewImageAsync(
 				device,
 				new DivoomImage(imageBytes),
-				default
+				CancellationToken
 			);
 
 		deviceResponse.IsOk.Should().BeTrue();

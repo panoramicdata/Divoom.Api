@@ -1,7 +1,5 @@
-﻿using Divergic.Logging.Xunit;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Configuration;
-using Xunit.Abstractions;
 
 namespace Divoom.Api.Test;
 
@@ -9,13 +7,17 @@ public abstract class Test
 {
 	private DivoomClientOptions? _divoomClientOptions;
 
-	protected ICacheLogger Logger { get; }
+	protected static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+	protected ILogger Logger { get; }
 
 	protected DivoomClient Client { get; }
 
 	protected Test(ITestOutputHelper testOutputHelper)
 	{
-		Logger = testOutputHelper.BuildLogger();
+		Logger = LoggerFactory.Create(builder => builder
+			.AddProvider(new XunitLoggerProvider(testOutputHelper)))
+			.CreateLogger<Test>();
 		Client = new DivoomClient(GetDivoomClientOptions(), Logger);
 	}
 
@@ -36,7 +38,7 @@ public abstract class Test
 		if (!fileInfo.Exists)
 		{
 			// No - hint to the user what to do
-			throw new ConfigurationErrorsException("Missing appsettings.json.  Please copy the appsettings.example.json in the project root folder and set the various values appropriately.");
+			throw new InvalidOperationException("Missing appsettings.json.  Please copy the appsettings.example.json in the project root folder and set the various values appropriately.");
 		}
 		// Yes
 
@@ -44,7 +46,7 @@ public abstract class Test
 		_divoomClientOptions = JsonConvert.DeserializeObject<DivoomClientOptions>(File.ReadAllText(fileInfo.FullName));
 		if (_divoomClientOptions is null)
 		{
-			throw new ConfigurationErrorsException("Configuration did not deserialize");
+			throw new InvalidOperationException("Configuration did not deserialize");
 		}
 
 		return _divoomClientOptions;

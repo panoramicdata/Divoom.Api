@@ -1,19 +1,14 @@
+using AwesomeAssertions;
 using Divoom.Api.Models;
-using FluentAssertions;
-using Xunit.Abstractions;
 
 namespace Divoom.Api.Test;
 
-public class ChannelTests : Test
+public class ChannelTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper)
 {
-	public ChannelTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-	{
-	}
-
 	[Fact]
 	public async Task SetDialAsync_Succeeds()
 	{
-		var response = await Client.Channel.SetDialAsync(new Models.SetDialRequest { DialId = 0 }, default);
+		var response = await Client.Channel.SetDialAsync(new Models.SetDialRequest { DialId = 0 }, CancellationToken);
 		response.Should().NotBeNull();
 		response.ReturnCode.Should().Be(0);
 	}
@@ -21,7 +16,7 @@ public class ChannelTests : Test
 	[Fact]
 	public async Task GetDialInfoAsync_Succeeds()
 	{
-		var response = await Client.Channel.GetDialInfoAsync(new(), default);
+		var response = await Client.Channel.GetDialInfoAsync(new(), CancellationToken);
 		response.Should().NotBeNull();
 		response.Should().BeOfType<GetDialInfoResponse>();
 		response.ReturnCode.Should().Be(0);
