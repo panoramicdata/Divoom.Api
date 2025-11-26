@@ -41,7 +41,7 @@ public class DeviceResponse
 			}
 		}
 
-		Bytes = outputBytes.ToArray();
+		Bytes = [.. outputBytes];
 	}
 
 	public Command Command { get; private set; }

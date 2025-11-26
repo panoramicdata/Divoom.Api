@@ -15,19 +15,58 @@ namespace Divoom.Api.Implementations;
 
 internal sealed class BluetoothManager : IBluetooth
 {
-	private readonly Dictionary<long, NetworkStream> _bluetoothClients = new();
+	private readonly Dictionary<long, NetworkStream> _bluetoothClients = [];
 
 	#region Get
 
 	public List<DivoomBluetoothDevice> GetDevices()
 	{
-		// Enumerate all Bluetooth devices.
-		var devices = new BluetoothClient().DiscoverDevices();
+		try
+		{
+			// Enumerate all Bluetooth devices.
+			// The modern InTheHand.Net.Bluetooth library discovers all paired and nearby devices
+			var bluetoothClient = new BluetoothClient();
 
-		return devices
-			.Where(x => x.DeviceName.Contains("TimeBox"))
-			.Select(x => new DivoomBluetoothDevice(x))
-			.ToList();
+			// Retry logic: Bluetooth discovery can be unreliable on Windows
+			// Sometimes it needs multiple attempts to find paired devices
+			var maxAttempts = 3;
+			var allDevices = Enumerable.Empty<BluetoothDeviceInfo>();
+
+			for (var attempt = 1; attempt <= maxAttempts; attempt++)
+			{
+				// Discover devices - this may take several seconds
+				var discovered = bluetoothClient.DiscoverDevices();
+
+				if (discovered.Any())
+				{
+					allDevices = discovered;
+					break;
+				}
+
+				// If no devices found and not last attempt, wait and retry
+				if (attempt < maxAttempts)
+				{
+					System.Threading.Thread.Sleep(2000); // Wait 2 seconds before retry
+				}
+			}
+
+			// Filter for Divoom/TimeBox devices (case-insensitive)
+			// Common device names: "TimeBox", "TimeBox-Evo", "PIXOO64", "Pixoo", "Divoom"
+			return [.. allDevices
+				.Where(x => x.DeviceName != null && (
+					x.DeviceName.Contains("TimeBox", StringComparison.OrdinalIgnoreCase) ||
+					x.DeviceName.Contains("PIXOO", StringComparison.OrdinalIgnoreCase) ||
+					x.DeviceName.Contains("Divoom", StringComparison.OrdinalIgnoreCase)
+				))
+				.Select(x => new DivoomBluetoothDevice(x))];
+		}
+		catch (Exception ex)
+		{
+			// Log or wrap the exception with more context
+			throw new InvalidOperationException(
+				"Failed to discover Bluetooth devices. Ensure Bluetooth is enabled and you have proper permissions.",
+				ex);
+		}
 	}
 
 	public async Task<DeviceSettings> GetSettingsAsync(
@@ -466,7 +505,7 @@ internal sealed class BluetoothManager : IBluetooth
 		}
 
 		// TODO
-		return new DeviceResponseSet(new());
+		return new DeviceResponseSet([]);
 	}
 
 	#endregion
@@ -600,11 +639,11 @@ internal sealed class BluetoothManager : IBluetooth
 				}
 			}
 
-			return new(Array.Empty<byte>());
+			return new([]);
 		}
 		catch
 		{
-			return new(Array.Empty<byte>());
+			return new([]);
 		}
 	}
 

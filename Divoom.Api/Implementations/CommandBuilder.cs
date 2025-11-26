@@ -5,7 +5,7 @@ namespace Divoom.Api.Implementations;
 
 internal sealed class CommandBuilder
 {
-	readonly List<byte> _bytes = new();
+	readonly List<byte> _bytes = [];
 	uint _checksum;
 	uint _count;
 
@@ -38,7 +38,7 @@ internal sealed class CommandBuilder
 		// Add the end byte
 		byteList.Add(0x02);
 
-		return byteList.ToArray();
+		return [.. byteList];
 	}
 
 	public void Add(byte @byte)

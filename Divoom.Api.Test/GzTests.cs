@@ -3,6 +3,7 @@ using Divoom.Api.Models;
 
 namespace Divoom.Api.Test;
 
+[Collection("Network API Tests")]
 public class GzTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper)
 {
 	[Fact]

@@ -6,8 +6,8 @@ namespace Divoom.Api.Models;
 
 public class DivoomImage
 {
-	private readonly List<Color> _palette = new();
-	private readonly List<byte> _encodedImage = new();
+	private readonly List<Color> _palette = [];
+	private readonly List<byte> _encodedImage = [];
 	public int FrameTimeMs { get; }
 
 	public DivoomImage(Color[] image, TimeSpan? frameTime = null)

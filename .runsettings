@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <RunConfiguration>
-    <MaxCpuCount>0</MaxCpuCount>
+    <MaxCpuCount>1</MaxCpuCount>
     <ResultsDirectory>.\TestResults</ResultsDirectory>
   </RunConfiguration>
   <xUnit>
@@ -9,8 +9,8 @@
     <AppDomain>denied</AppDomain>
     <PreEnumerateTheories>true</PreEnumerateTheories>
     <ParallelizeAssembly>false</ParallelizeAssembly>
-    <ParallelizeTestCollections>true</ParallelizeTestCollections>
-    <MaxParallelThreads>0</MaxParallelThreads>
+    <ParallelizeTestCollections>false</ParallelizeTestCollections>
+    <MaxParallelThreads>1</MaxParallelThreads>
     <MethodDisplay>method</MethodDisplay>
     <InternalDiagnosticMessages>false</InternalDiagnosticMessages>
     <ShadowCopy>false</ShadowCopy>

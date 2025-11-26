@@ -9,8 +9,13 @@
 
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<EnableMicrosoftTestingExtensions>true</EnableMicrosoftTestingExtensions>
+		<EnableMicrosoftTestingExtensions>false</EnableMicrosoftTestingExtensions>
+		<EnableXunitMicrosoftTestingPlatform>false</EnableXunitMicrosoftTestingPlatform>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="obj\**\SelfRegisteredExtensions.cs" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AwesomeAssertions" Version="9.3.0" />
@@ -21,13 +26,11 @@
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
-		<PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.1.0" />
 		<PackageReference Include="xunit.v3" Version="3.2.0" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using AwesomeAssertions;
 using Divoom.Api.Models;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -8,13 +9,63 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Divoom.Api.Test;
 
-public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper)
+[Collection("Bluetooth Sequential Tests")]
+public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper), IAsyncLifetime
 {
+	public async ValueTask InitializeAsync() =>
+		// Small delay before each test to allow device to settle
+		await Task.Delay(500);
+
+	public async ValueTask DisposeAsync() =>
+		// Small delay after each test to allow device to settle
+		await Task.Delay(500);
+
 	[Fact]
 	public void GetDivoomDevice_Succeeds()
 	{
+		// This test requires a physical Divoom/TimeBox/PIXOO device to be:
+		// 1. Powered on
+		// 2. Paired with this PC via Bluetooth
+		// 3. Within range (< 10 meters)
+
 		var device = GetFirstDevice();
 		device.Should().BeOfType<DivoomBluetoothDevice>();
+	}
+
+	[Fact] // Removed Skip attribute to run diagnostics
+	public void DiagnoseBluetooth_ListsAllDevices()
+	{
+		// This diagnostic test lists ALL discovered Bluetooth devices
+		// to help troubleshoot why Divoom devices aren't being found
+
+		var bluetoothClient = new InTheHand.Net.Sockets.BluetoothClient();
+		var allDevices = bluetoothClient.DiscoverDevices();
+
+		Logger.LogInformation("Found {AllDeviceCount} total Bluetooth devices:", allDevices.Count);
+
+		foreach (var device in allDevices)
+		{
+			Logger.Log(LogLevel.Information, $"  - {device.DeviceName} ({device.DeviceAddress}) - Paired: {device.Authenticated}, Connected: {device.Connected}");
+		}
+
+		allDevices.Should().NotBeNull();
+
+		// Log which devices match our filters
+		var matchingDevices = allDevices.Where(x => x.DeviceName != null && (
+			x.DeviceName.Contains("TimeBox", StringComparison.OrdinalIgnoreCase) ||
+			x.DeviceName.Contains("PIXOO", StringComparison.OrdinalIgnoreCase) ||
+			x.DeviceName.Contains("Divoom", StringComparison.OrdinalIgnoreCase)
+		)).ToList();
+
+		Logger.Log(LogLevel.Information, $"Found {matchingDevices.Count} Divoom/TimeBox/PIXOO devices");
+
+		if (matchingDevices.Count == 0)
+		{
+			Logger.Log(LogLevel.Warning, "No Divoom devices found. Please ensure:");
+			Logger.Log(LogLevel.Warning, "  1. Device is powered on");
+			Logger.Log(LogLevel.Warning, "  2. Device is paired in Windows Bluetooth settings");
+			Logger.Log(LogLevel.Warning, "  3. Device is within range");
+		}
 	}
 
 	[Fact]
@@ -564,10 +615,28 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	private DivoomBluetoothDevice GetFirstDevice()
 	{
 		var devices = Client.Bluetooth.GetDevices();
-		devices.Should().NotBeNull();
-		devices.Should().BeOfType<List<DivoomBluetoothDevice>>();
-		devices.Should().HaveCountGreaterThan(0);
+		devices.Should().NotBeNull("Bluetooth discovery should not return null");
 
-		return devices[0];
+		if (devices.Count == 0)
+		{
+			// Provide helpful diagnostic information
+			Logger.Log(LogLevel.Error, "No Divoom devices found during Bluetooth discovery.");
+			Logger.Log(LogLevel.Error, "Troubleshooting steps:");
+			Logger.Log(LogLevel.Error, "  1. Ensure your Divoom device (TimeBox/PIXOO) is powered ON");
+			Logger.Log(LogLevel.Error, "  2. Pair the device in Windows Settings → Bluetooth & devices");
+			Logger.Log(LogLevel.Error, "  3. Ensure Bluetooth is enabled on your PC");
+			Logger.Log(LogLevel.Error, "  4. Move the device closer (within 10 meters)");
+			Logger.Log(LogLevel.Error, "  5. Run the DiagnoseBluetooth_ListsAllDevices test to see all discovered devices");
+			Logger.Log(LogLevel.Error, "");
+			Logger.Log(LogLevel.Error, "To run diagnostics: Remove [Skip] attribute from DiagnoseBluetooth_ListsAllDevices test");
+		}
+
+		devices.Should().BeOfType<List<DivoomBluetoothDevice>>();
+		devices.Should().HaveCountGreaterThan(0, "at least one Divoom/TimeBox/PIXOO device should be discovered. See log output above for troubleshooting steps.");
+
+		var device = devices[0];
+		Logger.Log(LogLevel.Information, $"Using device: {device}");
+
+		return device;
 	}
 }
