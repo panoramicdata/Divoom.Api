@@ -7,7 +7,7 @@
 		<AnalysisMode>Recommended</AnalysisMode>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<PackageIcon>Icon.png</PackageIcon>
-		<Copyright>Panoramic Data Limited 2022</Copyright>
+		<Copyright>Panoramic Data Limited 2025</Copyright>
 		<PackageProjectUrl>https://github.com/panoramicdata/Divoom.Api</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/panoramicdata/Divoom.Api</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

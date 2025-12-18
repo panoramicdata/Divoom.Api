@@ -8,7 +8,10 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage(
 	"Naming",
 	"CA1707:Identifiers should not contain underscores",
-	Justification = "Appropriate for Unit Tests",
-	Scope = "namespaceanddescendants",
-	Target = "~N:Divoom.Api.Test"
+	Justification = "Appropriate for Unit Tests"
+)]
+[assembly: SuppressMessage(
+	"Performance",
+	"CA1848:Use the LoggerMessage delegates",
+	Justification = "Implementation effort not worth the performance gain"
 )]

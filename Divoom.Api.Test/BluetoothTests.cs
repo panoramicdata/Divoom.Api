@@ -16,9 +16,12 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 		// Small delay before each test to allow device to settle
 		await Task.Delay(500);
 
-	public async ValueTask DisposeAsync() =>
+	public async ValueTask DisposeAsync()
+	{
 		// Small delay after each test to allow device to settle
 		await Task.Delay(500);
+		GC.SuppressFinalize(this);
+	}
 
 	[Fact]
 	public void GetDivoomDevice_Succeeds()
@@ -45,7 +48,12 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 
 		foreach (var device in allDevices)
 		{
-			Logger.Log(LogLevel.Information, $"  - {device.DeviceName} ({device.DeviceAddress}) - Paired: {device.Authenticated}, Connected: {device.Connected}");
+			Logger.LogInformation(
+				"  - {DeviceName} ({DeviceAddress}) - Paired: {Authenticated}, Connected: {Connected}",
+				device.DeviceName,
+				device.DeviceAddress,
+				device.Authenticated,
+				device.Connected);
 		}
 
 		allDevices.Should().NotBeNull();
@@ -57,14 +65,14 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 			x.DeviceName.Contains("Divoom", StringComparison.OrdinalIgnoreCase)
 		)).ToList();
 
-		Logger.Log(LogLevel.Information, $"Found {matchingDevices.Count} Divoom/TimeBox/PIXOO devices");
+		Logger.LogInformation("Found {MatchingDeviceCount} Divoom/TimeBox/PIXOO devices", matchingDevices.Count);
 
 		if (matchingDevices.Count == 0)
 		{
-			Logger.Log(LogLevel.Warning, "No Divoom devices found. Please ensure:");
-			Logger.Log(LogLevel.Warning, "  1. Device is powered on");
-			Logger.Log(LogLevel.Warning, "  2. Device is paired in Windows Bluetooth settings");
-			Logger.Log(LogLevel.Warning, "  3. Device is within range");
+			Logger.LogWarning("No Divoom devices found. Please ensure:");
+			Logger.LogWarning("  1. Device is powered on");
+			Logger.LogWarning("  2. Device is paired in Windows Bluetooth settings");
+			Logger.LogWarning("  3. Device is within range");
 		}
 	}
 
@@ -620,22 +628,22 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 		if (devices.Count == 0)
 		{
 			// Provide helpful diagnostic information
-			Logger.Log(LogLevel.Error, "No Divoom devices found during Bluetooth discovery.");
-			Logger.Log(LogLevel.Error, "Troubleshooting steps:");
-			Logger.Log(LogLevel.Error, "  1. Ensure your Divoom device (TimeBox/PIXOO) is powered ON");
-			Logger.Log(LogLevel.Error, "  2. Pair the device in Windows Settings → Bluetooth & devices");
-			Logger.Log(LogLevel.Error, "  3. Ensure Bluetooth is enabled on your PC");
-			Logger.Log(LogLevel.Error, "  4. Move the device closer (within 10 meters)");
-			Logger.Log(LogLevel.Error, "  5. Run the DiagnoseBluetooth_ListsAllDevices test to see all discovered devices");
-			Logger.Log(LogLevel.Error, "");
-			Logger.Log(LogLevel.Error, "To run diagnostics: Remove [Skip] attribute from DiagnoseBluetooth_ListsAllDevices test");
+			Logger.LogError("No Divoom devices found during Bluetooth discovery.");
+			Logger.LogError("Troubleshooting steps:");
+			Logger.LogError("  1. Ensure your Divoom device (TimeBox/PIXOO) is powered ON");
+			Logger.LogError("  2. Pair the device in Windows Settings → Bluetooth & devices");
+			Logger.LogError("  3. Ensure Bluetooth is enabled on your PC");
+			Logger.LogError("  4. Move the device closer (within 10 meters)");
+			Logger.LogError("  5. Run the DiagnoseBluetooth_ListsAllDevices test to see all discovered devices");
+			Logger.LogError("");
+			Logger.LogError("To run diagnostics: Remove [Skip] attribute from DiagnoseBluetooth_ListsAllDevices test");
 		}
 
 		devices.Should().BeOfType<List<DivoomBluetoothDevice>>();
 		devices.Should().HaveCountGreaterThan(0, "at least one Divoom/TimeBox/PIXOO device should be discovered. See log output above for troubleshooting steps.");
 
 		var device = devices[0];
-		Logger.Log(LogLevel.Information, $"Using device: {device}");
+		Logger.LogInformation("Using device: {Device}", device);
 
 		return device;
 	}
