@@ -11,6 +11,7 @@
 		<IsTestProject>true</IsTestProject>
 		<EnableMicrosoftTestingExtensions>false</EnableMicrosoftTestingExtensions>
 		<EnableXunitMicrosoftTestingPlatform>false</EnableXunitMicrosoftTestingPlatform>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
