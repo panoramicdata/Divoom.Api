@@ -347,7 +347,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		TimeSpan timeSpan,
 		CancellationToken cancellationToken)
 	{
-		var re = await SetBrightnessAsync(device, 100, cancellationToken);
+		_ = await SetBrightnessAsync(device, 100, cancellationToken);
 
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
@@ -486,7 +486,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 				commandBuilder.Add(frameDataByte);
 			}
 
-			var response = await SendCommandAsync(device, commandBuilder, cancellationToken);
+			_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
 		}
 
 		// TODO
