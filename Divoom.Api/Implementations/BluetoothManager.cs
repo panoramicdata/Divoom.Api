@@ -3,6 +3,7 @@ using Divoom.Api.Models;
 using InTheHand.Net;
 using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,46 +14,45 @@ using System.Threading.Tasks;
 
 namespace Divoom.Api.Implementations;
 
-internal sealed class BluetoothManager : IBluetooth
+internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 {
 	private readonly Dictionary<long, NetworkStream> _bluetoothClients = [];
 
 	#region Get
 
-	public List<DivoomBluetoothDevice> GetDevices()
+	public Task<List<DivoomBluetoothDevice>> GetDevicesAsync(
+		CancellationToken cancellationToken) => GetDevicesAsync(DiscoveryMode.PairedOnly, cancellationToken);
+
+	public async Task<List<DivoomBluetoothDevice>> GetDevicesAsync(
+		DiscoveryMode discoveryMode,
+		CancellationToken cancellationToken)
 	{
+		logger.LogInformation("Starting Bluetooth device discovery with mode: {DiscoveryMode}", discoveryMode);
+
 		try
 		{
 			// Enumerate all Bluetooth devices.
+			var bluetoothDevices = new List<BluetoothDeviceInfo>();
+
 			// The modern InTheHand.Net.Bluetooth library discovers all paired and nearby devices
 			var bluetoothClient = new BluetoothClient();
 
-			// Retry logic: Bluetooth discovery can be unreliable on Windows
-			// Sometimes it needs multiple attempts to find paired devices
-			var maxAttempts = 3;
-			var allDevices = Enumerable.Empty<BluetoothDeviceInfo>();
-
-			for (var attempt = 1; attempt <= maxAttempts; attempt++)
+			if (discoveryMode is DiscoveryMode.All or DiscoveryMode.PairedOnly)
 			{
-				// Discover devices - this may take several seconds
-				var discovered = bluetoothClient.DiscoverDevices();
+				bluetoothDevices.AddRange(bluetoothClient.PairedDevices);
+			}
 
-				if (discovered.Any())
+			if (discoveryMode is DiscoveryMode.All or DiscoveryMode.DiscoveredOnly)
+			{
+				await foreach (var bluetoothDevice in bluetoothClient.DiscoverDevicesAsync(cancellationToken))
 				{
-					allDevices = discovered;
-					break;
-				}
-
-				// If no devices found and not last attempt, wait and retry
-				if (attempt < maxAttempts)
-				{
-					System.Threading.Thread.Sleep(2000); // Wait 2 seconds before retry
+					bluetoothDevices.Add(bluetoothDevice);
 				}
 			}
 
 			// Filter for Divoom/TimeBox devices (case-insensitive)
 			// Common device names: "TimeBox", "TimeBox-Evo", "PIXOO64", "Pixoo", "Divoom"
-			return [.. allDevices
+			return [.. bluetoothDevices
 				.Where(x => x.DeviceName != null && (
 					x.DeviceName.Contains("TimeBox", StringComparison.OrdinalIgnoreCase) ||
 					x.DeviceName.Contains("PIXOO", StringComparison.OrdinalIgnoreCase) ||
@@ -123,7 +123,7 @@ internal sealed class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)Command.SetMuteState);
 		commandBuilder.Add((byte)muteState);
 
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
 	public async Task SetTemperatureUnitAsync(
@@ -135,10 +135,10 @@ internal sealed class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)Command.SetTemperatureUnit);
 		commandBuilder.Add((byte)temperatureUnit);
 
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
-	public async Task<DeviceResponse> SetDateTimeAsync(
+	public async Task SetDateTimeAsync(
 		DivoomBluetoothDevice device,
 		DateTime dateTime,
 		CancellationToken cancellationToken)
@@ -153,8 +153,7 @@ internal sealed class BluetoothManager : IBluetooth
 		commandBuilder.Add((byte)dateTime.Minute);
 		commandBuilder.Add((byte)dateTime.Second);
 
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
 	public async Task<DeviceResponseSet> SetWeatherAsync(
@@ -263,7 +262,7 @@ internal sealed class BluetoothManager : IBluetooth
 		commandBuilder.Add(color.B);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet.Responses.Single();
+		return responseSet.Responses.First();
 	}
 
 	public async Task<int> GetVolumeAsync(
@@ -292,20 +291,6 @@ internal sealed class BluetoothManager : IBluetooth
 		var deviceResponse = deviceReponseSet.Responses[^1].Bytes[0];
 
 		return (MuteState)deviceResponse;
-	}
-
-	public async Task<TemperatureUnit> GetTemperatureUnitAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken)
-	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetTemperatureUnit);
-
-		var deviceReponseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-
-		var deviceResponse = deviceReponseSet.Responses[^1].Bytes[0];
-
-		return (TemperatureUnit)deviceResponse;
 	}
 
 	public async Task<DeviceResponseSet> ViewLightingAsync(
@@ -578,7 +563,7 @@ internal sealed class BluetoothManager : IBluetooth
 					case 0:
 						if (byteAsInt != 0x01)
 						{
-							throw new Exception("First byte should be 0x01");
+							throw new FormatException("First byte should be 0x01");
 						}
 
 						// All is well
@@ -652,6 +637,14 @@ internal sealed class BluetoothManager : IBluetooth
 		if (_bluetoothClients.TryGetValue(device.DeviceInfo.DeviceAddress.ToInt64(), out var stream))
 		{
 			return stream;
+		}
+
+		// Verify device is reachable before connecting
+		if (!device.DeviceInfo.Connected)
+		{
+			throw new InvalidOperationException(
+				$"Device '{device.DeviceInfo.DeviceName}' is paired but not currently connected. " +
+				"Ensure the device is powered on and within range.");
 		}
 
 		// Connect to the device.

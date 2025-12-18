@@ -4,5 +4,5 @@ namespace Divoom.Api.Models;
 
 public class DivoomBluetoothDevice(BluetoothDeviceInfo x)
 {
-	internal BluetoothDeviceInfo DeviceInfo { get; private set; } = x;
+	public BluetoothDeviceInfo DeviceInfo { get; private set; } = x;
 }

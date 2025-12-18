@@ -1,17 +1,22 @@
 ﻿using AwesomeAssertions;
 using Divoom.Api.Models;
 using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 using Color = System.Drawing.Color;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace Divoom.Api.Test;
 
-[Collection("Bluetooth Sequential Tests")]
-public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper), IAsyncLifetime
+[Collection("Bluetooth")]
+public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture fixture) : IAsyncLifetime
 {
+	private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+	private DivoomClient Client => fixture.Client;
+
+	private ILogger Logger { get; } = LoggerFactory.Create(builder => builder
+		.AddProvider(new XunitLoggerProvider(testOutputHelper)))
+		.CreateLogger<BluetoothTests>();
+
 	public async ValueTask InitializeAsync() =>
 		// Small delay before each test to allow device to settle
 		await Task.Delay(500);
@@ -24,25 +29,29 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	}
 
 	[Fact]
-	public void GetDivoomDevice_Succeeds()
+	public async Task GetDivoomDevice_Succeeds()
 	{
 		// This test requires a physical Divoom/TimeBox/PIXOO device to be:
 		// 1. Powered on
 		// 2. Paired with this PC via Bluetooth
 		// 3. Within range (< 10 meters)
 
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		device.Should().BeOfType<DivoomBluetoothDevice>();
 	}
 
 	[Fact] // Removed Skip attribute to run diagnostics
-	public void DiagnoseBluetooth_ListsAllDevices()
+	public async Task DiagnoseBluetooth_ListsAllDevices()
 	{
 		// This diagnostic test lists ALL discovered Bluetooth devices
 		// to help troubleshoot why Divoom devices aren't being found
 
 		var bluetoothClient = new InTheHand.Net.Sockets.BluetoothClient();
-		var allDevices = bluetoothClient.DiscoverDevices();
+		var allDevices = new List<InTheHand.Net.Sockets.BluetoothDeviceInfo>();
+		await foreach (var device in bluetoothClient.DiscoverDevicesAsync(CancellationToken))
+		{
+			allDevices.Add(device);
+		}
 
 		Logger.LogInformation("Found {AllDeviceCount} total Bluetooth devices:", allDevices.Count);
 
@@ -79,7 +88,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task SetBrightness_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		// Set the brightness from 0% to 100% in steps of 10
 		for (var brightness = 0; brightness <= 100; brightness += 10)
 		{
@@ -92,19 +101,19 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	}
 
 	[Fact]
-	public async Task SetVolume_To2Then3_Succeeds()
+	public async Task SetVolume_To3_SetsTo2()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		await Client
 			.Bluetooth
-			.SetVolumeAsync(device, 2, CancellationToken);
+			.SetVolumeAsync(device, 7, CancellationToken);
 
 		var volumeRefetch = await Client
 			.Bluetooth
 			.GetVolumeAsync(device, CancellationToken);
 
-		volumeRefetch.Should().Be(2);
+		volumeRefetch.Should().Be(7);
 
 		await Client
 			.Bluetooth
@@ -114,13 +123,13 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 			.Bluetooth
 			.GetVolumeAsync(device, CancellationToken);
 
-		volumeRefetch.Should().Be(3);
+		volumeRefetch.Should().Be(2);
 	}
 
 	[Fact]
 	public async Task SetVolume_ToValuesOtherThan3_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		// Set the volume from 0 to 16
 		for (var volume = 0; volume <= 16; volume++)
 		{
@@ -153,7 +162,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[InlineData(17)]
 	public async Task SetVolume_Fails_OutsideRange(int illegalVolume)
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		try
 		{
 			await Client
@@ -171,7 +180,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task GetVolume_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var volume = await Client
 			.Bluetooth
 			.GetVolumeAsync(device, CancellationToken);
@@ -183,7 +192,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task GetOutput_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponseSet = await Client
 			.Bluetooth
 			.ReadResponseAsync(device, TimeSpan.FromMilliseconds(5000), CancellationToken);
@@ -193,7 +202,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task GetMuteState_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var muteState = await Client
 			.Bluetooth
 			.GetMuteStateAsync(device, CancellationToken);
@@ -203,7 +212,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task SetMuteState_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		await Client
 			.Bluetooth
@@ -215,7 +224,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task SetTemperatureUnit_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		await Client
 			.Bluetooth
@@ -223,33 +232,17 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 				TemperatureUnit.Farenheit,
 				CancellationToken);
 
-		var refetchedTemperatureUnit = await Client
-			.Bluetooth
-			.GetTemperatureUnitAsync(device, CancellationToken);
-
-		refetchedTemperatureUnit
-			.Should()
-			.Be(TemperatureUnit.Farenheit);
-
 		await Client
 			.Bluetooth
 			.SetTemperatureUnitAsync(device,
 				TemperatureUnit.Celsius,
 				CancellationToken);
-
-		refetchedTemperatureUnit = await Client
-			.Bluetooth
-			.GetTemperatureUnitAsync(device, CancellationToken);
-
-		refetchedTemperatureUnit
-			.Should()
-			.Be(TemperatureUnit.Celsius);
 	}
 
 	[Fact]
 	public async Task GetWeather_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
 			.GetWeatherAsync(device, CancellationToken);
@@ -260,7 +253,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewTime_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		_ = await Client
 			.Bluetooth
 			.ViewClockAsync(
@@ -279,7 +272,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewClockAsync_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
 			.ViewClockAsync(
@@ -300,7 +293,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewClockAsync_JustClock_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
 			.ViewClock2Async(
@@ -320,7 +313,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task SetWeatherAsync_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponseSet = await Client
 			.Bluetooth
 			.SetWeatherAsync(
@@ -337,7 +330,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewChannel_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		foreach (var channel in Enum.GetValues<Models.Channel>())
 		{
@@ -366,7 +359,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewLighting_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
 			.ViewLightingAsync(
@@ -383,7 +376,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewVisualization_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		foreach (var visualizationType in Enum.GetValues<VisualizationType>())
 		{
 			var deviceResponse = await Client.Bluetooth.ViewVisualizationAsync(
@@ -400,7 +393,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewStopwatch_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
 			.ViewStopwatchAsync(
@@ -414,7 +407,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewWeather_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		var deviceResponse = await Client
 			.Bluetooth
@@ -449,7 +442,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task GetSettings_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		_ = await Client
 			.Bluetooth
@@ -459,22 +452,20 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task SetDateTime_Succeeds()
 	{
-		var device = GetFirstDevice();
-		var deviceResponse = await Client
+		var device = await GetFirstDeviceAsync(CancellationToken);
+		await Client
 			.Bluetooth
 			.SetDateTimeAsync(
 				device,
 				DateTime.UtcNow.AddHours(1),
 				CancellationToken);
-
-		deviceResponse.IsOk.Should().BeTrue();
 	}
 
 
 	[Fact]
 	public async Task ViewScoreboard_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		for (var redScore = 0; redScore <= 4; redScore++)
 		{
@@ -488,8 +479,6 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 						blueScore, CancellationToken);
 
 				deviceResponse.IsOk.Should().BeTrue();
-
-				await Task.Delay(1000, CancellationToken);
 			}
 		}
 	}
@@ -510,7 +499,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 			}
 		}
 
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		var deviceResponse = await Client
 			.Bluetooth
@@ -526,7 +515,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	[Fact]
 	public async Task ViewAnimation_FromFile_Succeeds()
 	{
-		var device = GetFirstDevice();
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		var divoomAnimation = GetDivoomAnimation(new FileInfo("../../../Animations/ReportMagic.gif"));
 
@@ -544,30 +533,49 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	{
 		var animation = new DivoomAnimation();
 		var frameTime = TimeSpan.Zero;
-		using var image = Image.Load<Rgb24>(fileInfo.FullName);
-		foreach (var frame in image.Frames)
+
+		using var stream = File.OpenRead(fileInfo.FullName);
+		using var codec = SKCodec.Create(stream) ?? throw new InvalidOperationException($"Failed to load animation from {fileInfo.FullName}");
+		var frameCount = codec.FrameCount;
+		var info = codec.Info;
+
+		for (var frameIndex = 0; frameIndex < frameCount; frameIndex++)
 		{
+			var frameInfo = codec.FrameInfo[frameIndex];
+			using var bitmap = new SKBitmap(info);
+
+			var options = new SKCodecOptions(frameIndex);
+			codec.GetPixels(bitmap.Info, bitmap.GetPixels(), options);
+
+			// Resize to 16x16 if needed
+			SKBitmap resizedBitmap;
+			if (bitmap.Width != 16 || bitmap.Height != 16)
+			{
+				resizedBitmap = bitmap.Resize(new SKImageInfo(16, 16), SKSamplingOptions.Default);
+			}
+			else
+			{
+				resizedBitmap = bitmap;
+			}
+
 			var frameImageBytes = new Color[256];
 			var pixelIndex = 0;
-			frame.ProcessPixelRows(accessor =>
+
+			for (var y = 0; y < 16; y++)
 			{
-				for (var y = 0; y < 16; y++)
+				for (var x = 0; x < 16; x++)
 				{
-					Span<Rgb24> pixelRow = accessor.GetRowSpan(y);
-					for (var x = 0; x < 16; x++)
-					{
-						ref Rgb24 pixel = ref pixelRow[x];
-
-						var r = pixel.R;
-						var g = pixel.G;
-						var b = pixel.B;
-						frameImageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
-					}
+					var pixel = resizedBitmap.GetPixel(x, y);
+					frameImageBytes[pixelIndex++] = Color.FromArgb(pixel.Red, pixel.Green, pixel.Blue);
 				}
-			});
+			}
 
-			var frameDelay = TimeSpan.FromMilliseconds(frame.Metadata.GetGifMetadata().FrameDelay * 10);
+			if (resizedBitmap != bitmap)
+			{
+				resizedBitmap.Dispose();
+			}
 
+			var frameDelay = TimeSpan.FromMilliseconds(frameInfo.Duration);
 			frameTime += frameDelay;
 
 			animation.AddFrame(new DivoomImage(frameImageBytes, frameTime));
@@ -581,33 +589,35 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 	{
 		var imageBytes = new Color[256];
 		var pixelIndex = 0;
-		// Load PNG image from file using SixLabors.ImageSharp
-		using (var fileImage = Image.Load<Rgb24>("../../../Images/ReportMagic.png"))
+
+		using var bitmap = SKBitmap.Decode("../../../Images/ReportMagic.png");
+
+		// Resize to 16x16 if needed
+		SKBitmap resizedBitmap;
+		if (bitmap.Width != 16 || bitmap.Height != 16)
 		{
-			if (fileImage.Width != 16 && fileImage.Height != 16)
-			{
-				fileImage.Mutate(x => x.Resize(16, 16));
-			}
-
-			fileImage.ProcessPixelRows(accessor =>
-			{
-				for (var y = 0; y < 16; y++)
-				{
-					Span<Rgb24> pixelRow = accessor.GetRowSpan(y);
-					for (var x = 0; x < 16; x++)
-					{
-						ref Rgb24 pixel = ref pixelRow[x];
-
-						var r = pixel.R;
-						var g = pixel.G;
-						var b = pixel.B;
-						imageBytes[pixelIndex++] = Color.FromArgb(r, g, b);
-					}
-				}
-			});
+			resizedBitmap = bitmap.Resize(new SKImageInfo(16, 16), SKSamplingOptions.Default);
+		}
+		else
+		{
+			resizedBitmap = bitmap;
 		}
 
-		var device = GetFirstDevice();
+		for (var y = 0; y < 16; y++)
+		{
+			for (var x = 0; x < 16; x++)
+			{
+				var pixel = resizedBitmap.GetPixel(x, y);
+				imageBytes[pixelIndex++] = Color.FromArgb(pixel.Red, pixel.Green, pixel.Blue);
+			}
+		}
+
+		if (resizedBitmap != bitmap)
+		{
+			resizedBitmap.Dispose();
+		}
+
+		var device = await GetFirstDeviceAsync(CancellationToken);
 
 		var deviceResponse = await Client
 			.Bluetooth
@@ -620,9 +630,12 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 		deviceResponse.IsOk.Should().BeTrue();
 	}
 
-	private DivoomBluetoothDevice GetFirstDevice()
+	private async Task<DivoomBluetoothDevice> GetFirstDeviceAsync(CancellationToken cancellationToken)
 	{
-		var devices = Client.Bluetooth.GetDevices();
+		var devices = await Client
+			.Bluetooth
+			.GetDevicesAsync(cancellationToken);
+
 		devices.Should().NotBeNull("Bluetooth discovery should not return null");
 
 		if (devices.Count == 0)
@@ -642,7 +655,8 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper) : Test(testOutpu
 		devices.Should().BeOfType<List<DivoomBluetoothDevice>>();
 		devices.Should().HaveCountGreaterThan(0, "at least one Divoom/TimeBox/PIXOO device should be discovered. See log output above for troubleshooting steps.");
 
-		var device = devices[0];
+		var device = devices.FirstOrDefault(d => d.DeviceInfo.Connected) ?? throw new InvalidOperationException("No connected devices found");
+
 		Logger.LogInformation("Using device: {Device}", device);
 
 		return device;

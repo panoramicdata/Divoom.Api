@@ -11,7 +11,8 @@ public interface IBluetooth
 {
 	#region Get
 
-	List<DivoomBluetoothDevice> GetDevices();
+	Task<List<DivoomBluetoothDevice>> GetDevicesAsync(
+		CancellationToken cancellationToken);
 
 	Task<DeviceSettings> GetSettingsAsync(
 		DivoomBluetoothDevice device,
@@ -33,7 +34,7 @@ public interface IBluetooth
 
 	#region Set
 
-	Task<DeviceResponse> SetDateTimeAsync(
+	Task SetDateTimeAsync(
 		DivoomBluetoothDevice device,
 		DateTime dateTime,
 		CancellationToken cancellationToken);
@@ -129,10 +130,6 @@ public interface IBluetooth
 	Task SetTemperatureUnitAsync(
 		DivoomBluetoothDevice device,
 		TemperatureUnit temperatureUnit,
-		CancellationToken cancellationToken);
-
-	Task<TemperatureUnit> GetTemperatureUnitAsync(
-		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);
 
 	Task<DeviceResponseSet> ReadResponseAsync(DivoomBluetoothDevice device, TimeSpan readDelay, CancellationToken cancellationToken);

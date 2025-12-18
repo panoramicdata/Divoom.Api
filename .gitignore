@@ -164,3 +164,6 @@ launchSettings.json
 .idea/
 GeneratedBinaries
 ./Divoom.Api.Test/appsettings.json
+
+# NuGet API key (sensitive - never commit)
+nuget-key.txt

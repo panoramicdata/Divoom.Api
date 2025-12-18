@@ -6,6 +6,7 @@
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="global.json" />
+    <File Path="nuget-key.txt" />
     <File Path="README.md" />
     <File Path="version.json" />
   </Folder>

@@ -13,7 +13,7 @@ internal sealed class DivoomHttpClientHandler(
 	ILogger logger) : HttpClientHandler
 {
 	private readonly DivoomClientOptions _options = options;
-	private readonly DivoomClient _DivoomClient = DivoomClient;
+	private readonly DivoomClient _divoomClient = DivoomClient;
 	private readonly ILogger _logger = logger;
 	private readonly LogLevel _levelToLogAt = LogLevel.Trace;
 
@@ -65,7 +65,7 @@ internal sealed class DivoomHttpClientHandler(
 					var headers = httpResponseMessage.Headers;
 					var foundHeader = headers.TryGetValues("Retry-After", out var retryAfterHeaders);
 					var retryAfterSecondsString = foundHeader
-						? retryAfterHeaders.FirstOrDefault() ?? "1"
+						? retryAfterHeaders?.FirstOrDefault() ?? "1"
 						: "1";
 					if (!int.TryParse(retryAfterSecondsString, out var retryAfterSeconds))
 					{

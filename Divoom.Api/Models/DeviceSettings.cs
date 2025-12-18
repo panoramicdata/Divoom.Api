@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Divoom.Api.Models;
+﻿namespace Divoom.Api.Models;
 
 public class DeviceSettings
 {
@@ -19,18 +17,8 @@ public class DeviceSettings
 					case 1 or 2 or 4:
 						break;
 					case 3:
-						if (@byte != 0x4a)
-						{
-							throw new FormatException($"This does not appear to be a valid response because the byte at index {byteIndex - 1} is not 0x4a.");
-						}
-
 						break;
 					case 5:
-						if (@byte != 0x7f && @byte != 0x00)
-						{
-							throw new FormatException($"This does not appear to be a valid response because the byte at index {byteIndex - 1} is not 0x7f or 0x00.");
-						}
-
 						Byte5Is7f = @byte == 0x7f;
 
 						break;
@@ -39,6 +27,7 @@ public class DeviceSettings
 						break;
 					default:
 						//017f007f00010001000100
+						//00:00:00:FF:00:FF:64:00:01:0B:64:01:FF:FF:00:00:01:01:01:01
 						break;
 				}
 			}

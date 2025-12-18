@@ -35,7 +35,7 @@ public class ChannelTests(ITestOutputHelper testOutputHelper) : Test(testOutputH
 		var response = await Client.Channel.SetAsync(new SetChannelRequest
 		{
 			Index = index
-		}, default);
+		}, CancellationToken);
 		response.Should().NotBeNull();
 		response.Should().BeOfType<PixooResponse>();
 		response.ReturnCode.Should().Be(0);
