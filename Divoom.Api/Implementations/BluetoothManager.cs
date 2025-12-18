@@ -16,7 +16,7 @@ namespace Divoom.Api.Implementations;
 
 internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 {
-	private readonly Dictionary<long, NetworkStream> _bluetoothClients = [];
+	private readonly Dictionary<ulong, NetworkStream> _bluetoothClients = [];
 
 	#region Get
 
@@ -351,7 +351,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)0x01);
+		commandBuilder.Add(0x01);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 		return responseSet;
@@ -634,7 +634,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 
 	private NetworkStream GetStream(DivoomBluetoothDevice device)
 	{
-		if (_bluetoothClients.TryGetValue(device.DeviceInfo.DeviceAddress.ToInt64(), out var stream))
+		if (_bluetoothClients.TryGetValue(device.DeviceInfo.DeviceAddress, out var stream))
 		{
 			return stream;
 		}
@@ -651,7 +651,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		var bluetoothClient = new BluetoothClient();
 		bluetoothClient.Connect(new BluetoothEndPoint(device.DeviceInfo.DeviceAddress, BluetoothService.SerialPort, 1));
 		stream = bluetoothClient.GetStream();
-		_bluetoothClients.Add(device.DeviceInfo.DeviceAddress.ToInt64(), stream);
+		_bluetoothClients.Add(device.DeviceInfo.DeviceAddress, stream);
 
 		return stream;
 	}
