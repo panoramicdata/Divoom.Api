@@ -53,16 +53,22 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 			allDevices.Add(device);
 		}
 
-		Logger.LogInformation("Found {AllDeviceCount} total Bluetooth devices:", allDevices.Count);
+		if (Logger.IsEnabled(LogLevel.Information))
+		{
+			Logger.LogInformation("Found {AllDeviceCount} total Bluetooth devices:", allDevices.Count);
+		}
 
 		foreach (var device in allDevices)
 		{
-			Logger.LogInformation(
-				"  - {DeviceName} ({DeviceAddress}) - Paired: {Authenticated}, Connected: {Connected}",
-				device.DeviceName,
-				device.DeviceAddress,
-				device.Authenticated,
-				device.Connected);
+			if (Logger.IsEnabled(LogLevel.Information))
+			{
+				Logger.LogInformation(
+					"  - {DeviceName} ({DeviceAddress}) - Paired: {Authenticated}, Connected: {Connected}",
+					device.DeviceName,
+					device.DeviceAddress,
+					device.Authenticated,
+					device.Connected);
+			}
 		}
 
 		allDevices.Should().NotBeNull();
@@ -74,7 +80,10 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 			x.DeviceName.Contains("Divoom", StringComparison.OrdinalIgnoreCase)
 		)).ToList();
 
-		Logger.LogInformation("Found {MatchingDeviceCount} Divoom/TimeBox/PIXOO devices", matchingDevices.Count);
+		if (Logger.IsEnabled(LogLevel.Information))
+		{
+			Logger.LogInformation("Found {MatchingDeviceCount} Divoom/TimeBox/PIXOO devices", matchingDevices.Count);
+		}
 
 		if (matchingDevices.Count == 0)
 		{
@@ -657,7 +666,10 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 
 		var device = devices.FirstOrDefault(d => d.DeviceInfo.Connected) ?? throw new InvalidOperationException("No connected devices found");
 
-		Logger.LogInformation("Using device: {Device}", device);
+		if (Logger.IsEnabled(LogLevel.Information))
+		{
+			Logger.LogInformation("Using device: {Device}", device);
+		}
 
 		return device;
 	}

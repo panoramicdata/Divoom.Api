@@ -29,10 +29,10 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 # Colors for output
-function Write-Step { param($Message) Write-Host "`n=== $Message ===" -ForegroundColor Cyan }
-function Write-Success { param($Message) Write-Host "[SUCCESS] $Message" -ForegroundColor Green }
-function Write-Failure { param($Message) Write-Host "[FAILED] $Message" -ForegroundColor Red }
-function Write-Info { param($Message) Write-Host "[INFO] $Message" -ForegroundColor Yellow }
+function Write-Step { param($Message) Write-Information "`n=== $Message ===" }
+function Write-Success { param($Message) Write-Information "[SUCCESS] $Message" }
+function Write-Failure { param($Message) Write-Information "[FAILED] $Message" }
+function Write-Info { param($Message) Write-Information "[INFO] $Message" }
 
 # Track script start time
 $scriptStartTime = Get-Date
@@ -49,8 +49,8 @@ try {
     
     if ($gitStatus) {
         Write-Failure "Git working directory is not clean. Uncommitted changes detected:"
-        Write-Host $gitStatus
-        Write-Host "`nPlease commit or stash your changes before publishing." -ForegroundColor Yellow
+        Write-Information $gitStatus
+        Write-Information "`nPlease commit or stash your changes before publishing."
         exit 1
     }
     
@@ -73,7 +73,7 @@ try {
     $versionJson = nbgv get-version --format json 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Failure "Failed to get version from nbgv"
-        Write-Host $versionJson
+        Write-Information $versionJson
         exit 1
     }
     
@@ -91,7 +91,7 @@ try {
     # Check file exists
     if (-not (Test-Path $nugetKeyPath)) {
         Write-Failure "nuget-key.txt not found at: $nugetKeyPath"
-        Write-Host "Please create nuget-key.txt with your NuGet API key." -ForegroundColor Yellow
+        Write-Information "Please create nuget-key.txt with your NuGet API key."
         exit 1
     }
     
@@ -99,7 +99,7 @@ try {
     $nugetKey = (Get-Content $nugetKeyPath -Raw).Trim()
     if ([string]::IsNullOrWhiteSpace($nugetKey)) {
         Write-Failure "nuget-key.txt is empty"
-        Write-Host "Please add your NuGet API key to nuget-key.txt" -ForegroundColor Yellow
+        Write-Information "Please add your NuGet API key to nuget-key.txt"
         exit 1
     }
     
@@ -109,7 +109,7 @@ try {
         $gitIgnoreContent = Get-Content $gitIgnorePath -Raw
         if ($gitIgnoreContent -notmatch 'nuget-key\.txt') {
             Write-Failure "nuget-key.txt is not in .gitignore"
-            Write-Host "Please add 'nuget-key.txt' to .gitignore to prevent accidental commits." -ForegroundColor Yellow
+            Write-Information "Please add 'nuget-key.txt' to .gitignore to prevent accidental commits."
             exit 1
         }
     } else {
@@ -121,7 +121,7 @@ try {
     $isIgnored = git check-ignore "nuget-key.txt" 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Failure "nuget-key.txt is not being ignored by git"
-        Write-Host "Please ensure 'nuget-key.txt' is properly added to .gitignore" -ForegroundColor Yellow
+        Write-Information "Please ensure 'nuget-key.txt' is properly added to .gitignore"
         exit 1
     }
     
@@ -136,7 +136,7 @@ try {
         $testResult = dotnet test --configuration Release --verbosity minimal 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Failure "Unit tests failed"
-            Write-Host $testResult
+            Write-Information $testResult
             exit 1
         }
         
@@ -146,7 +146,7 @@ try {
     # Step 5: Build and pack
     Write-Step "Building and packing NuGet package"
     
-    $projectPath = Join-Path $PSScriptRoot "Divoom.Api" "Divoom.Api.csproj"
+    $projectPath = Join-Path -Path $PSScriptRoot -ChildPath "Divoom.Api" -AdditionalChildPath "Divoom.Api.csproj"
     
     # Clean and build in Release mode
     dotnet clean $projectPath --configuration Release --verbosity minimal 2>&1 | Out-Null
@@ -154,7 +154,7 @@ try {
     $buildOutput = dotnet build $projectPath --configuration Release --verbosity minimal 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Failure "Build failed"
-        Write-Host $buildOutput
+        Write-Information $buildOutput
         exit 1
     }
     
@@ -162,14 +162,14 @@ try {
     $packOutput = dotnet pack $projectPath --configuration Release --no-build --verbosity minimal 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Failure "Pack failed"
-        Write-Host $packOutput
+        Write-Information $packOutput
         exit 1
     }
     
     Write-Success "Package built successfully"
 
     # Find the generated package
-    $packageDir = Join-Path $PSScriptRoot "Divoom.Api" "bin" "Release"
+    $packageDir = Join-Path -Path $PSScriptRoot -ChildPath "Divoom.Api" -AdditionalChildPath "bin", "Release"
     $nupkgFile = Get-ChildItem -Path $packageDir -Filter "Divoom.Api.$nugetVersion.nupkg" -ErrorAction SilentlyContinue | Select-Object -First 1
     
     if (-not $nupkgFile) {
@@ -196,7 +196,7 @@ try {
             Write-Info "Package version already exists on NuGet.org (skipped)"
         } else {
             Write-Failure "Failed to publish to NuGet.org"
-            Write-Host $pushOutput
+            Write-Information $pushOutput
             exit 1
         }
     } else {
@@ -205,20 +205,20 @@ try {
 
     # Summary
     $elapsed = (Get-Date) - $scriptStartTime
-    Write-Host "`n" -NoNewline
-    Write-Host "========================================" -ForegroundColor Green
-    Write-Host " PUBLISH COMPLETED SUCCESSFULLY" -ForegroundColor Green
-    Write-Host "========================================" -ForegroundColor Green
-    Write-Host " Package: Divoom.Api" -ForegroundColor White
-    Write-Host " Version: $nugetVersion" -ForegroundColor White
-    Write-Host " Time:    $($elapsed.ToString('mm\:ss'))" -ForegroundColor White
-    Write-Host "========================================" -ForegroundColor Green
+    Write-Information ""
+    Write-Information "========================================"
+    Write-Information " PUBLISH COMPLETED SUCCESSFULLY"
+    Write-Information "========================================"
+    Write-Information " Package: Divoom.Api"
+    Write-Information " Version: $nugetVersion"
+    Write-Information " Time:    $($elapsed.ToString('mm\:ss'))"
+    Write-Information "========================================"
     
     exit 0
 }
 catch {
     Write-Failure "An unexpected error occurred"
-    Write-Host $_.Exception.Message -ForegroundColor Red
-    Write-Host $_.ScriptStackTrace -ForegroundColor DarkGray
+    Write-Information $_.Exception.Message
+    Write-Information $_.ScriptStackTrace
     exit 1
 }

@@ -3,11 +3,9 @@
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
 		<AnalysisMode>Recommended</AnalysisMode>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<PackageIcon>Icon.png</PackageIcon>
-		<Copyright>Panoramic Data Limited 2025</Copyright>
 		<PackageProjectUrl>https://github.com/panoramicdata/Divoom.Api</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/panoramicdata/Divoom.Api</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -16,13 +14,10 @@
 		<Description>Divoom API</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Authors>Panoramic Data Limited</Authors>
-		<Company>Panoramic Data Limited</Company>
 		<NeutralLanguage>en</NeutralLanguage>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
 		<PackageReleaseNotes>ViewImageAsync() now works.</PackageReleaseNotes>
 
@@ -34,13 +29,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="InTheHand.Net.Bluetooth" Version="4.2.2" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.9.50">
+		<PackageReference Include="InTheHand.Net.Bluetooth" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+		<PackageReference Include="Nerdbank.GitVersioning">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Refit.Newtonsoft.Json" Version="8.0.0" />
+		<PackageReference Include="Refit.Newtonsoft.Json" />
 	</ItemGroup>
 
 </Project>

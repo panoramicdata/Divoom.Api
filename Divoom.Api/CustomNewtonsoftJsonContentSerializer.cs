@@ -79,7 +79,8 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 		{
 			_logger.LogWarning(ex, "{Message}", ex.Message);
 
-			if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None)
+			if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None
+				&& _logger.IsEnabled(_options.JsonMissingMemberResponseLogLevel))
 			{
 				_logger.Log(_options.JsonMissingMemberResponseLogLevel, "Missing Member Response JSON:\n{SourceJson}", sourceJson);
 			}
@@ -110,7 +111,8 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 		}
 		catch (JsonSerializationException ex)
 		{
-			if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None)
+			if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None
+				&& _logger.IsEnabled(_options.JsonMissingMemberResponseLogLevel))
 			{
 				_logger.Log(_options.JsonMissingMemberResponseLogLevel, "Missing Member Response JSON:\n{SourceJson}", sourceJson);
 			}
