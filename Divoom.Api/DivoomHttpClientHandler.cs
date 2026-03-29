@@ -80,6 +80,7 @@ internal sealed class DivoomHttpClientHandler(
 							logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
 							);
 					}
+
 					break;
 				case 502:
 					if (_logger.IsEnabled(LogLevel.Information))
@@ -89,6 +90,7 @@ internal sealed class DivoomHttpClientHandler(
 							logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
 							);
 					}
+
 					delay = TimeSpan.FromSeconds(5);
 					break;
 				default:
@@ -127,6 +129,7 @@ internal sealed class DivoomHttpClientHandler(
 						logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
 						);
 				}
+
 				return httpResponseMessage;
 			}
 
@@ -143,6 +146,7 @@ internal sealed class DivoomHttpClientHandler(
 					request.RequestUri
 					);
 			}
+
 			await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
 		}
 	}
