@@ -1,224 +1,50 @@
-<#
-.SYNOPSIS
-    Publishes the Divoom.Api NuGet package to nuget.org
-
-.DESCRIPTION
-    This script performs the following steps:
-    1. Checks for clean git working directory (no uncommitted changes)
-    2. Determines the Nerdbank GitVersioning version
-    3. Validates nuget-key.txt exists, has content, and is gitignored
-    4. Runs unit tests (unless -SkipTests is specified)
-    5. Publishes to nuget.org
-
-.PARAMETER SkipTests
-    Skip running unit tests before publishing
-
-.EXAMPLE
-    .\Publish.ps1
-    
-.EXAMPLE
-    .\Publish.ps1 -SkipTests
-#>
-
-[CmdletBinding()]
-param(
-    [switch]$SkipTests
-)
+# Panoramic Data NuGet Publish Script (Standard)
+# Tags the current commit with the NBGV version and pushes to trigger CI/CD publishing.
+# Usage: .\Publish.ps1
 
 $ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
 
-# Colors for output
-function Write-Step { param($Message) Write-Information "`n=== $Message ===" }
-function Write-Success { param($Message) Write-Information "[SUCCESS] $Message" }
-function Write-Failure { param($Message) Write-Information "[FAILED] $Message" }
-function Write-Info { param($Message) Write-Information "[INFO] $Message" }
-
-# Track script start time
-$scriptStartTime = Get-Date
-
-try {
-    # Step 1: Check for clean git working directory (porcelain)
-    Write-Step "Checking git working directory status"
-    
-    $gitStatus = git status --porcelain 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Failure "Failed to get git status"
-        exit 1
-    }
-    
-    if ($gitStatus) {
-        Write-Failure "Git working directory is not clean. Uncommitted changes detected:"
-        Write-Information $gitStatus
-        Write-Information "`nPlease commit or stash your changes before publishing."
-        exit 1
-    }
-    
-    Write-Success "Git working directory is clean"
-
-    # Step 2: Determine Nerdbank GitVersioning version
-    Write-Step "Determining Nerdbank GitVersioning version"
-    
-    # Ensure nbgv tool is available
-    $nbgvPath = Get-Command nbgv -ErrorAction SilentlyContinue
-    if (-not $nbgvPath) {
-        Write-Info "Installing nbgv dotnet tool..."
-        dotnet tool install --global nbgv 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            Write-Failure "Failed to install nbgv tool"
-            exit 1
-        }
-    }
-    
-    $versionJson = nbgv get-version --format json 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Failure "Failed to get version from nbgv"
-        Write-Information $versionJson
-        exit 1
-    }
-    
-    $versionInfo = $versionJson | ConvertFrom-Json
-    $nugetVersion = $versionInfo.NuGetPackageVersion
-    $semVer = $versionInfo.SemVer2
-    
-    Write-Success "Version: $semVer (NuGet: $nugetVersion)"
-
-    # Step 3: Validate nuget-key.txt
-    Write-Step "Validating nuget-key.txt"
-    
-    $nugetKeyPath = Join-Path $PSScriptRoot "nuget-key.txt"
-    
-    # Check file exists
-    if (-not (Test-Path $nugetKeyPath)) {
-        Write-Failure "nuget-key.txt not found at: $nugetKeyPath"
-        Write-Information "Please create nuget-key.txt with your NuGet API key."
-        exit 1
-    }
-    
-    # Check file has content
-    $nugetKey = (Get-Content $nugetKeyPath -Raw).Trim()
-    if ([string]::IsNullOrWhiteSpace($nugetKey)) {
-        Write-Failure "nuget-key.txt is empty"
-        Write-Information "Please add your NuGet API key to nuget-key.txt"
-        exit 1
-    }
-    
-    # Check file is gitignored
-    $gitIgnorePath = Join-Path $PSScriptRoot ".gitignore"
-    if (Test-Path $gitIgnorePath) {
-        $gitIgnoreContent = Get-Content $gitIgnorePath -Raw
-        if ($gitIgnoreContent -notmatch 'nuget-key\.txt') {
-            Write-Failure "nuget-key.txt is not in .gitignore"
-            Write-Information "Please add 'nuget-key.txt' to .gitignore to prevent accidental commits."
-            exit 1
-        }
-    } else {
-        Write-Failure ".gitignore file not found"
-        exit 1
-    }
-    
-    # Double-check with git check-ignore
-    $isIgnored = git check-ignore "nuget-key.txt" 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Failure "nuget-key.txt is not being ignored by git"
-        Write-Information "Please ensure 'nuget-key.txt' is properly added to .gitignore"
-        exit 1
-    }
-    
-    Write-Success "nuget-key.txt is valid and gitignored"
-
-    # Step 4: Run unit tests (unless -SkipTests)
-    if ($SkipTests) {
-        Write-Step "Skipping unit tests (-SkipTests specified)"
-    } else {
-        Write-Step "Running unit tests"
-        
-        $testResult = dotnet test --configuration Release --verbosity minimal 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Failure "Unit tests failed"
-            Write-Information $testResult
-            exit 1
-        }
-        
-        Write-Success "All unit tests passed"
-    }
-
-    # Step 5: Build and pack
-    Write-Step "Building and packing NuGet package"
-    
-    $projectPath = Join-Path -Path $PSScriptRoot -ChildPath "Divoom.Api" -AdditionalChildPath "Divoom.Api.csproj"
-    
-    # Clean and build in Release mode
-    dotnet clean $projectPath --configuration Release --verbosity minimal 2>&1 | Out-Null
-    
-    $buildOutput = dotnet build $projectPath --configuration Release --verbosity minimal 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Failure "Build failed"
-        Write-Information $buildOutput
-        exit 1
-    }
-    
-    # Pack (this generates the .nupkg)
-    $packOutput = dotnet pack $projectPath --configuration Release --no-build --verbosity minimal 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Failure "Pack failed"
-        Write-Information $packOutput
-        exit 1
-    }
-    
-    Write-Success "Package built successfully"
-
-    # Find the generated package
-    $packageDir = Join-Path -Path $PSScriptRoot -ChildPath "Divoom.Api" -AdditionalChildPath "bin", "Release"
-    $nupkgFile = Get-ChildItem -Path $packageDir -Filter "Divoom.Api.$nugetVersion.nupkg" -ErrorAction SilentlyContinue | Select-Object -First 1
-    
-    if (-not $nupkgFile) {
-        # Try finding any nupkg file
-        $nupkgFile = Get-ChildItem -Path $packageDir -Filter "*.nupkg" -ErrorAction SilentlyContinue | 
-                     Where-Object { $_.Name -notmatch '\.symbols\.' } | 
-                     Select-Object -First 1
-    }
-    
-    if (-not $nupkgFile) {
-        Write-Failure "Could not find generated .nupkg file in $packageDir"
-        exit 1
-    }
-    
-    Write-Info "Package: $($nupkgFile.Name)"
-
-    # Step 6: Publish to NuGet.org
-    Write-Step "Publishing to NuGet.org"
-    
-    $pushOutput = dotnet nuget push $nupkgFile.FullName --api-key $nugetKey --source "https://api.nuget.org/v3/index.json" --skip-duplicate 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        # Check if it's a duplicate error (which is acceptable with --skip-duplicate)
-        if ($pushOutput -match "already exists|skip-duplicate") {
-            Write-Info "Package version already exists on NuGet.org (skipped)"
-        } else {
-            Write-Failure "Failed to publish to NuGet.org"
-            Write-Information $pushOutput
-            exit 1
-        }
-    } else {
-        Write-Success "Published $($nupkgFile.Name) to NuGet.org"
-    }
-
-    # Summary
-    $elapsed = (Get-Date) - $scriptStartTime
-    Write-Information ""
-    Write-Information "========================================"
-    Write-Information " PUBLISH COMPLETED SUCCESSFULLY"
-    Write-Information "========================================"
-    Write-Information " Package: Divoom.Api"
-    Write-Information " Version: $nugetVersion"
-    Write-Information " Time:    $($elapsed.ToString('mm\:ss'))"
-    Write-Information "========================================"
-    
-    exit 0
-}
-catch {
-    Write-Failure "An unexpected error occurred"
-    Write-Information $_.Exception.Message
-    Write-Information $_.ScriptStackTrace
+# Check for clean working tree
+$status = git status --porcelain
+if ($status) {
+    Write-Error "Working tree is not clean. Commit or stash changes before publishing.`n$status"
     exit 1
 }
+
+# Ensure we are on the main branch
+$branch = git rev-parse --abbrev-ref HEAD
+if ($branch -ne 'main') {
+    Write-Error "Publishing is only supported from the 'main' branch (currently on '$branch')."
+    exit 1
+}
+
+# Ensure local main is up to date with remote
+git fetch origin main --quiet
+$localHead = git rev-parse HEAD
+$remoteHead = git rev-parse origin/main
+if ($localHead -ne $remoteHead) {
+    Write-Error "Local branch is not up to date with origin/main. Pull or push first."
+    exit 1
+}
+
+# Get version from NBGV
+$versionJson = nbgv get-version -f json | ConvertFrom-Json
+$version = $versionJson.SimpleVersion
+
+if (-not $version) {
+    Write-Error "Failed to determine version from nbgv."
+    exit 1
+}
+
+# Check tag doesn't already exist
+$existingTag = git tag -l $version
+if ($existingTag) {
+    Write-Error "Tag '$version' already exists."
+    exit 1
+}
+
+Write-Host "Tagging as $version ..." -ForegroundColor Cyan
+git tag $version
+git push origin $version
+
+Write-Host "Published tag $version - CI will build and push to NuGet." -ForegroundColor Green
