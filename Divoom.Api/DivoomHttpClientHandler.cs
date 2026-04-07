@@ -73,25 +73,36 @@ internal sealed class DivoomHttpClientHandler(
 					}
 
 					delay = TimeSpan.FromSeconds(1.1 * retryAfterSeconds);
-					_logger.LogDebug(
-						"{LogPrefix}Received {StatusCodeInt} on attempt {AttemptCount}/{MaxAttemptCount}.",
-						logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
-						);
-					break;
-				case 502:
-					_logger.LogInformation(
-						"{LogPrefix}Received {StatusCodeInt} on attempt {AttemptCount}/{MaxAttemptCount}.",
-						logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
-						);
-					delay = TimeSpan.FromSeconds(5);
-					break;
-				default:
-					if (attemptCount > 1)
+					if (_logger.IsEnabled(LogLevel.Debug))
 					{
 						_logger.LogDebug(
 							"{LogPrefix}Received {StatusCodeInt} on attempt {AttemptCount}/{MaxAttemptCount}.",
 							logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
 							);
+					}
+
+					break;
+				case 502:
+					if (_logger.IsEnabled(LogLevel.Information))
+					{
+						_logger.LogInformation(
+							"{LogPrefix}Received {StatusCodeInt} on attempt {AttemptCount}/{MaxAttemptCount}.",
+							logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
+							);
+					}
+
+					delay = TimeSpan.FromSeconds(5);
+					break;
+				default:
+					if (attemptCount > 1)
+					{
+						if (_logger.IsEnabled(LogLevel.Debug))
+						{
+							_logger.LogDebug(
+								"{LogPrefix}Received {StatusCodeInt} on attempt {AttemptCount}/{MaxAttemptCount}.",
+								logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
+								);
+						}
 					}
 
 					if (statusCodeInt == 500)
@@ -111,23 +122,31 @@ internal sealed class DivoomHttpClientHandler(
 			// Try up to the maximum retry count.
 			if (attemptCount >= _options.HttpMaxAttemptCount)
 			{
-				_logger.LogInformation(
-					"{LogPrefix}Giving up retrying.  Returning {StatusCodeInt} on attempt {AttemptCount}/{MaxAttemptCount}.",
-					logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
-					);
+				if (_logger.IsEnabled(LogLevel.Information))
+				{
+					_logger.LogInformation(
+						"{LogPrefix}Giving up retrying.  Returning {StatusCodeInt} on attempt {AttemptCount}/{MaxAttemptCount}.",
+						logPrefix, statusCodeInt, attemptCount, _options.HttpMaxAttemptCount
+						);
+				}
+
 				return httpResponseMessage;
 			}
 
-			_logger.LogInformation(
-				"{LogPrefix}Received {StatusCode} on attempt {AttemptCount}/{MaxAttemptCount} - Waiting {TotalSeconds:N2}s. ({Method} - {Url})",
-				logPrefix,
-				statusCodeInt,
-				attemptCount,
-				_options.HttpMaxAttemptCount,
-				delay.TotalSeconds,
-				request.Method.ToString(),
-				request.RequestUri
-				);
+			if (_logger.IsEnabled(LogLevel.Information))
+			{
+				_logger.LogInformation(
+					"{LogPrefix}Received {StatusCode} on attempt {AttemptCount}/{MaxAttemptCount} - Waiting {TotalSeconds:N2}s. ({Method} - {Url})",
+					logPrefix,
+					statusCodeInt,
+					attemptCount,
+					_options.HttpMaxAttemptCount,
+					delay.TotalSeconds,
+					request.Method.ToString(),
+					request.RequestUri
+					);
+			}
+
 			await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
 		}
 	}

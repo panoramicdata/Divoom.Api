@@ -34,5 +34,8 @@ internal sealed class XunitLoggerProvider(ITestOutputHelper output) : ILoggerPro
 {
 	public ILogger CreateLogger(string categoryName) => new XunitLogger(output, categoryName);
 
-	public void Dispose() { }
+	public void Dispose()
+	{
+		// No unmanaged resources to release
+	}
 }

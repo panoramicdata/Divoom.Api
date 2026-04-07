@@ -27,7 +27,10 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DiscoveryMode discoveryMode,
 		CancellationToken cancellationToken)
 	{
-		logger.LogInformation("Starting Bluetooth device discovery with mode: {DiscoveryMode}", discoveryMode);
+		if (logger.IsEnabled(LogLevel.Information))
+		{
+			logger.LogInformation("Starting Bluetooth device discovery with mode: {DiscoveryMode}", discoveryMode);
+		}
 
 		try
 		{

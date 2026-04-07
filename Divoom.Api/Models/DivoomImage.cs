@@ -116,7 +116,7 @@ public class DivoomImage
 			imageBytes.Add(color.R);
 			imageBytes.Add(color.G);
 			imageBytes.Add(color.B);
-		};
+		}
 
 		// Pixel data
 		foreach (var pixel in _encodedImage)
