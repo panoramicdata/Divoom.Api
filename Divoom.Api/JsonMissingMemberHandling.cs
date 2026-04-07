@@ -1,5 +1,8 @@
 ﻿namespace Divoom.Api;
 
+/// <summary>
+/// How to handle missing members during JSON deserialization
+/// </summary>
 public enum JsonMissingMemberHandling
 {
 	/// <summary>

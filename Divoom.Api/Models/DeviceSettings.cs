@@ -1,7 +1,14 @@
 ﻿namespace Divoom.Api.Models;
 
+/// <summary>
+/// Device settings
+/// </summary>
 public class DeviceSettings
 {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DeviceSettings"/> class.
+	/// </summary>
+	/// <param name="deviceResponseSet">The device response set.</param>
 	public DeviceSettings(DeviceResponseSet deviceResponseSet)
 	{
 		var byteIndex = 0;
@@ -34,9 +41,18 @@ public class DeviceSettings
 		}
 	}
 
+	/// <summary>
+	/// The current channel
+	/// </summary>
 	public Channel CurrentChannel { get; }
 
+	/// <summary>
+	/// The brightness percentage
+	/// </summary>
 	public int BrightnessPercent { get; }
 
+	/// <summary>
+	/// Whether byte 5 is 0x7f
+	/// </summary>
 	public bool Byte5Is7f { get; }
 }

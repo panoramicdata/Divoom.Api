@@ -4,6 +4,9 @@ using System.Text.Json;
 
 namespace Divoom.Api;
 
+/// <summary>
+/// Options for the Divoom client
+/// </summary>
 public class DivoomClientOptions
 {
 	/// <summary>
@@ -37,7 +40,13 @@ public class DivoomClientOptions
 	/// </summary>
 	public Action<Type, JsonException, string>? JsonMissingMemberAction { get; set; }
 
+	/// <summary>
+	/// The HTTP client timeout in seconds
+	/// </summary>
 	public double HttpClientTimeoutSeconds { get; set; } = 30;
 
+	/// <summary>
+	/// The maximum number of HTTP retry attempts
+	/// </summary>
 	public int HttpMaxAttemptCount { get; set; } = 2;
 }

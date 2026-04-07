@@ -4,10 +4,17 @@ using System.Linq;
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A Divoom animation consisting of multiple frames
+/// </summary>
 public class DivoomAnimation
 {
 	private readonly List<byte> _frameBytes = [];
 
+	/// <summary>
+	/// Adds a frame to the animation.
+	/// </summary>
+	/// <param name="image">The image frame to add.</param>
 	public void AddFrame(DivoomImage image)
 	{
 		// AA LLLL TTTT RR NN COLOR_DATA PIXEL_DATA

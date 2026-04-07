@@ -2,6 +2,9 @@
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A response containing dial info
+/// </summary>
 public class GetDialInfoResponse : PixooResponse
 {
 	/// <summary>

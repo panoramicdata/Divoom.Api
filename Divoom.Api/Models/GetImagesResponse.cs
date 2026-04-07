@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A response containing images
+/// </summary>
 public class GetImagesResponse : ReturnResponse
 {
 	/// <summary>

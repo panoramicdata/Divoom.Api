@@ -426,7 +426,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	/// Views an image
 	/// </summary>
 	/// <param name="device">The device</param>
-	/// <param name="image">An array of 256 colors, one for each pixel starting top left, moving left to right, then top to bottom.</param>
+	/// <param name="divoomImage">An array of 256 colors, one for each pixel starting top left, moving left to right, then top to bottom.</param>
 	/// <param name="cancellationToken">The CancellationToken</param>
 	/// <returns></returns>
 	/// <exception cref="NotSupportedException"></exception>

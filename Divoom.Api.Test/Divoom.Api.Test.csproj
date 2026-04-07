@@ -6,6 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AnalysisMode>Recommended</AnalysisMode>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
 
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>

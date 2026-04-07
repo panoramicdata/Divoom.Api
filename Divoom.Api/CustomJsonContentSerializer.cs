@@ -22,6 +22,11 @@ public class CustomJsonContentSerializer : IHttpContentSerializer
 	private readonly JsonSerializerOptions _jsonSerializerOptionsWithError;
 	private readonly SystemTextJsonContentSerializer _serializerIgnore;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="CustomJsonContentSerializer"/> class.
+	/// </summary>
+	/// <param name="options">The client options.</param>
+	/// <param name="logger">The logger.</param>
 	public CustomJsonContentSerializer(DivoomClientOptions options, ILogger logger)
 	{
 		_options = options;
@@ -44,9 +49,11 @@ public class CustomJsonContentSerializer : IHttpContentSerializer
 		_serializerIgnore = new SystemTextJsonContentSerializer(_jsonSerializerOptionsWithIgnore);
 	}
 
+	/// <inheritdoc />
 	public async Task<T?> FromHttpContentAsync<T>(HttpContent content)
 		=> await FromHttpContentAsync<T>(content, CancellationToken.None);
 
+	/// <inheritdoc />
 	public async Task<T?> FromHttpContentAsync<T>(HttpContent content, CancellationToken cancellationToken)
 		=> _options.JsonMissingMemberHandling switch
 		{
@@ -114,9 +121,11 @@ public class CustomJsonContentSerializer : IHttpContentSerializer
 		}
 	}
 
+	/// <inheritdoc />
 	public string? GetFieldNameForProperty(PropertyInfo propertyInfo)
 		=> _serializerIgnore.GetFieldNameForProperty(propertyInfo);
 
+	/// <inheritdoc />
 	public HttpContent ToHttpContent<T>(T item)
 		=> _serializerIgnore.ToHttpContent<T>(item);
 }

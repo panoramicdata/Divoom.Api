@@ -10,6 +10,10 @@ namespace Divoom.Api.Models;
 /// </summary>
 public class DeviceResponse
 {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DeviceResponse"/> class.
+	/// </summary>
+	/// <param name="bytes">The raw response bytes.</param>
 	public DeviceResponse(IEnumerable<byte> bytes)
 	{
 		var byteIndex = 0;
@@ -44,14 +48,27 @@ public class DeviceResponse
 		Bytes = [.. outputBytes];
 	}
 
+	/// <summary>
+	/// The command
+	/// </summary>
 	public Command Command { get; private set; }
 
+	/// <summary>
+	/// The response bytes
+	/// </summary>
 	public byte[] Bytes { get; private set; }
 
+	/// <summary>
+	/// Whether the response is empty
+	/// </summary>
 	public bool IsEmpty => Bytes.Length == 0;
 
+	/// <summary>
+	/// Whether the response is OK
+	/// </summary>
 	public bool IsOk { get; }
 
+	/// <inheritdoc />
 	public override string ToString() =>
 		$"{Command} {(IsOk ? "OK" : "Not OK")}: " +
 		(Command == Command.SetChannel

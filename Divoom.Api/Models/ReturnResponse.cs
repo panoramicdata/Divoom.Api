@@ -2,6 +2,9 @@
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A return response
+/// </summary>
 public abstract class ReturnResponse
 {
 	/// <summary>

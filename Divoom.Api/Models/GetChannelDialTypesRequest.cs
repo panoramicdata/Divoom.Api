@@ -2,6 +2,9 @@
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A request to get channel dials
+/// </summary>
 public class GetChannelDialsRequest : PagedRequest
 {
 	/// <summary>

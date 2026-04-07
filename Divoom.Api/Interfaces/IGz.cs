@@ -22,18 +22,16 @@ public interface IGz
 	/// It's not clear how this is achieved.
 	/// Perhaps the device is scanning the local network and reporting them back?
 	/// </summary>
-	/// <param name="value"></param>
+	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <returns></returns>
 	[Get("/Device/ReturnSameLANDevice")]
 	Task<GetLanDevicesResponse> GetLanDevicesAsync(
 		CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Gets a list of devices on the current LAN.
-	/// It's not clear how this is achieved.
-	/// Perhaps the device is scanning the local network and reporting them back?
+	/// Gets a list of dial fonts.
 	/// </summary>
-	/// <param name="value"></param>
+	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <returns></returns>
 	[Get("/Device/GetTimeDialFontList")]
 	Task<GetDialFontsResponse> GetDialFontsAsync(
@@ -42,7 +40,8 @@ public interface IGz
 	/// <summary>
 	/// Gets a list of dials for a particular channel
 	/// </summary>
-	/// <param name="value"></param>
+	/// <param name="request">The request.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <returns></returns>
 	[Get("/Channel/GetDialList")]
 	Task<GetChannelDialsResponse> GetChannelDialsAsync(
@@ -50,9 +49,10 @@ public interface IGz
 		CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Gets a list of dials for a particular channel
+	/// Gets a list of uploaded images
 	/// </summary>
-	/// <param name="value"></param>
+	/// <param name="request">The request.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <returns></returns>
 	[Post("/Device/GetImgUploadList")]
 	Task<GetImagesResponse> GetImagesAsync(
@@ -60,9 +60,10 @@ public interface IGz
 		CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Gets a list of dials for a particular channel
+	/// Gets a list of liked images
 	/// </summary>
-	/// <param name="value"></param>
+	/// <param name="request">The request.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <returns></returns>
 	[Post("/Device/GetImgLikeList")]
 	Task<GetImagesResponse> GetLikedImagesAsync(

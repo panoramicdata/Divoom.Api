@@ -2,6 +2,9 @@
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A paged return response
+/// </summary>
 public abstract class PagedReturnResponse : ReturnResponse
 {
 	/// <summary>

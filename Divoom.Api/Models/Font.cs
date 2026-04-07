@@ -2,6 +2,9 @@
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A font
+/// </summary>
 public class Font
 {
 	/// <summary>

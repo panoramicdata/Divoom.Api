@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A response containing dial types
+/// </summary>
 public class GetDialTypesResponse : ReturnResponse
 {
 	/// <summary>

@@ -7,8 +7,14 @@ using System.Net.Http;
 
 namespace Divoom.Api;
 
+/// <summary>
+/// A Divoom API client
+/// </summary>
 public class DivoomClient : IDisposable
 {
+	/// <summary>
+	/// The client options
+	/// </summary>
 	public DivoomClientOptions Options { get; }
 
 	private readonly ILogger _logger;
@@ -18,6 +24,11 @@ public class DivoomClient : IDisposable
 	private readonly HttpClient _localHttpClient;
 	private bool _disposedValue;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DivoomClient"/> class.
+	/// </summary>
+	/// <param name="options">The client options.</param>
+	/// <param name="logger">The logger.</param>
 	public DivoomClient(DivoomClientOptions options, ILogger logger)
 	{
 		Options = options;
@@ -51,12 +62,22 @@ public class DivoomClient : IDisposable
 		Bluetooth = new BluetoothManager(_logger);
 	}
 
+	/// <summary>
+	/// The Gz API interface
+	/// </summary>
 	public IGz Gz { get; }
 
+	/// <summary>
+	/// The Channel API interface
+	/// </summary>
 	public IChannel Channel { get; }
 
+	/// <summary>
+	/// The Bluetooth interface
+	/// </summary>
 	public IBluetooth Bluetooth { get; }
 
+	/// <inheritdoc />
 	protected virtual void Dispose(bool disposing)
 	{
 		if (!_disposedValue)
@@ -72,6 +93,7 @@ public class DivoomClient : IDisposable
 		}
 	}
 
+	/// <inheritdoc />
 	public void Dispose()
 	{
 		// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

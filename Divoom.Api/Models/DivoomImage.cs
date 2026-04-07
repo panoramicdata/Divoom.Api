@@ -4,12 +4,24 @@ using System.Drawing;
 
 namespace Divoom.Api.Models;
 
+/// <summary>
+/// A Divoom image
+/// </summary>
 public class DivoomImage
 {
 	private readonly List<Color> _palette = [];
 	private readonly List<byte> _encodedImage = [];
+
+	/// <summary>
+	/// The frame time in milliseconds
+	/// </summary>
 	public int FrameTimeMs { get; }
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DivoomImage"/> class.
+	/// </summary>
+	/// <param name="image">The pixel colors.</param>
+	/// <param name="frameTime">The optional frame duration.</param>
 	public DivoomImage(Color[] image, TimeSpan? frameTime = null)
 	{
 		// See https://github.com/RomRider/node-divoom-timebox-evo/blob/master/PROTOCOL.md#animations-images-and-text
@@ -81,6 +93,9 @@ public class DivoomImage
 		FrameTimeMs = (int)(frameTime?.TotalMilliseconds ?? 0);
 	}
 
+	/// <summary>
+	/// The image size in bytes
+	/// </summary>
 	public int ImageSize => _palette.Count * 3 + _encodedImage.Count;
 
 	internal List<byte> GetImageBytes()
