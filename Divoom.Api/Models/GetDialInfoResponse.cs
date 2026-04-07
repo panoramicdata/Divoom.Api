@@ -1,19 +1,18 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
-[DataContract]
 public class GetDialInfoResponse : PixooResponse
 {
 	/// <summary>
 	/// The Dial Id
 	/// </summary>
-	[DataMember(Name = "ClockId")]
+	[JsonPropertyName("ClockId")]
 	public int DialId { get; set; }
 
 	/// <summary>
 	/// The brightness
 	/// </summary>
-	[DataMember(Name = "Brightness")]
+	[JsonPropertyName("Brightness")]
 	public int Brightness { get; set; }
 }

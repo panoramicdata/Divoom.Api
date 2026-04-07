@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
+using System.Text.Json;
 
 namespace Divoom.Api;
 
@@ -35,7 +35,7 @@ public class DivoomClientOptions
 	/// <summary>
 	/// This gets called when JsonMissingMemberHandling is not Ignore and a missing member occurs
 	/// </summary>
-	public Action<Type, JsonSerializationException, string>? JsonMissingMemberAction { get; set; }
+	public Action<Type, JsonException, string>? JsonMissingMemberAction { get; set; }
 
 	public double HttpClientTimeoutSeconds { get; set; } = 30;
 

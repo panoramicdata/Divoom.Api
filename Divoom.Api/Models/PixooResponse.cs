@@ -1,10 +1,9 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
-[DataContract]
 public class PixooResponse
 {
-	[DataMember(Name = "error_code")]
+	[JsonPropertyName("error_code")]
 	public object ReturnCode { get; set; } = -1;
 }

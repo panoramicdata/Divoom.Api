@@ -1,11 +1,10 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
 /// <summary>
 /// A paged request
 /// </summary>
-[DataContract]
 public class PagedRequest
 {
 	/// <summary>
@@ -13,6 +12,6 @@ public class PagedRequest
 	/// for example: 1
 	/// There are 30 per page
 	/// </summary>
-	[DataMember(Name = "Page")]
+	[JsonPropertyName("Page")]
 	public int Page { get; set; } = 1;
 }

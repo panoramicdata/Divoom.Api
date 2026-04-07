@@ -1,14 +1,13 @@
 ﻿using Divoom.Api.Interfaces;
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
-[DataContract]
 public class SetChannelRequest : ICommand
 {
-	[DataMember(Name = "Command")]
+	[JsonPropertyName("Command")]
 	public string Command => "Channel/SetIndex";
 
-	[DataMember(Name = "SelectIndex")]
+	[JsonPropertyName("SelectIndex")]
 	public int Index { get; set; }
 }

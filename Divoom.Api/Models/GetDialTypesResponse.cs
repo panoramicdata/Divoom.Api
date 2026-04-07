@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
-[DataContract]
 public class GetDialTypesResponse : ReturnResponse
 {
 	/// <summary>
 	/// The list of dial types.
 	/// </summary>
-	[DataMember(Name = "DialTypeList")]
+	[JsonPropertyName("DialTypeList")]
 	public ICollection<string> DialTypes { get; set; } = null!;
 }

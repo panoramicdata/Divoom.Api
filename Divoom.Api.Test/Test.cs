@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Divoom.Api.Test;
 
@@ -43,7 +43,7 @@ public abstract class Test
 		// Yes
 
 		// Load in the config
-		_divoomClientOptions = JsonConvert.DeserializeObject<DivoomClientOptions>(File.ReadAllText(fileInfo.FullName));
+		_divoomClientOptions = JsonSerializer.Deserialize<DivoomClientOptions>(File.ReadAllText(fileInfo.FullName));
 		if (_divoomClientOptions is null)
 		{
 			throw new InvalidOperationException("Configuration did not deserialize");

@@ -1,11 +1,10 @@
 ﻿using Divoom.Api.Interfaces;
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
-[DataContract]
 public abstract class BasicCommand(string command) : ICommand
 {
-	[DataMember(Name = "Command")]
+	[JsonPropertyName("Command")]
 	public string Command { get; } = command;
 }

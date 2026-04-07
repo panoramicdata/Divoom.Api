@@ -1,52 +1,47 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Refit;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Divoom.Api;
 
 /// <summary>
-/// A custom IHttpContentSerializer based on NewtonsoftJsonContentSerializer
+/// A custom IHttpContentSerializer based on SystemTextJsonContentSerializer
 /// to handle retries after missing members are observed
 /// </summary>
-public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
+public class CustomJsonContentSerializer : IHttpContentSerializer
 {
 	private readonly DivoomClientOptions _options;
 	private readonly ILogger _logger;
-	private readonly JsonSerializerSettings _jsonSerializerSettingsWithIgnore;
-	private readonly JsonSerializerSettings _jsonSerializerSettingsWithError;
-	private readonly NewtonsoftJsonContentSerializer _serializerIgnore;
+	private readonly JsonSerializerOptions _jsonSerializerOptionsWithIgnore;
+	private readonly JsonSerializerOptions _jsonSerializerOptionsWithError;
+	private readonly SystemTextJsonContentSerializer _serializerIgnore;
 
-	public CustomNewtonsoftJsonContentSerializer(DivoomClientOptions options, ILogger logger)
+	public CustomJsonContentSerializer(DivoomClientOptions options, ILogger logger)
 	{
 		_options = options;
 		_logger = logger;
-		_jsonSerializerSettingsWithIgnore = new JsonSerializerSettings
+		_jsonSerializerOptionsWithIgnore = new JsonSerializerOptions
 		{
 			// By default nulls should not be rendered out, this will allow the receiving API to apply any defaults.
-			// Use [JsonProperty(NullValueHandling = NullValueHandling.Include)] to send
-			// nulls for specific properties, e.g. disassociating port schedule ids from a port
-			NullValueHandling = NullValueHandling.Ignore,
-			MissingMemberHandling = MissingMemberHandling.Ignore,
-			Converters = [new StringEnumConverter()]
+			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+			UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
+			Converters = { new JsonStringEnumConverter() }
 		};
-		_jsonSerializerSettingsWithError = new JsonSerializerSettings
+		_jsonSerializerOptionsWithError = new JsonSerializerOptions
 		{
 			// By default nulls should not be rendered out, this will allow the receiving API to apply any defaults.
-			// Use [JsonProperty(NullValueHandling = NullValueHandling.Include)] to send
-			// nulls for specific properties, e.g. disassociating port schedule ids from a port
-			NullValueHandling = NullValueHandling.Ignore,
-			MissingMemberHandling = MissingMemberHandling.Error,
-			Converters = [new StringEnumConverter()]
+			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+			UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+			Converters = { new JsonStringEnumConverter() }
 		};
 
-		_serializerIgnore = new NewtonsoftJsonContentSerializer(_jsonSerializerSettingsWithIgnore);
+		_serializerIgnore = new SystemTextJsonContentSerializer(_jsonSerializerOptionsWithIgnore);
 	}
 
 	public async Task<T?> FromHttpContentAsync<T>(HttpContent content)
@@ -73,9 +68,9 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 
 		try
 		{
-			return JsonConvert.DeserializeObject<T>(sourceJson, _jsonSerializerSettingsWithError);
+			return JsonSerializer.Deserialize<T>(sourceJson, _jsonSerializerOptionsWithError);
 		}
-		catch (JsonSerializationException ex)
+		catch (JsonException ex)
 		{
 			_logger.LogWarning(ex, "{Message}", ex.Message);
 
@@ -88,12 +83,7 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 			// Execute the action if one was provided
 			_options.JsonMissingMemberAction?.Invoke(typeof(T), ex, sourceJson);
 
-			return JsonConvert.DeserializeObject<T>(sourceJson, _jsonSerializerSettingsWithIgnore);
-		}
-		catch (JsonReaderException ex)
-		{
-			_logger.LogWarning("{Message} - Invalid JSON: {Json}", ex.Message, sourceJson);
-			throw;
+			return JsonSerializer.Deserialize<T>(sourceJson, _jsonSerializerOptionsWithIgnore);
 		}
 	}
 
@@ -107,9 +97,9 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 
 		try
 		{
-			return JsonConvert.DeserializeObject<T>(sourceJson, _jsonSerializerSettingsWithError);
+			return JsonSerializer.Deserialize<T>(sourceJson, _jsonSerializerOptionsWithError);
 		}
-		catch (JsonSerializationException ex)
+		catch (JsonException ex)
 		{
 			if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None
 				&& _logger.IsEnabled(_options.JsonMissingMemberResponseLogLevel))
@@ -120,11 +110,6 @@ public class CustomNewtonsoftJsonContentSerializer : IHttpContentSerializer
 			// Execute the action if one was provided
 			_options.JsonMissingMemberAction?.Invoke(typeof(T), ex, sourceJson);
 
-			throw;
-		}
-		catch (JsonReaderException ex)
-		{
-			_logger.LogWarning("{Message} - Invalid JSON: {Json}", ex.Message, sourceJson);
 			throw;
 		}
 	}

@@ -1,14 +1,13 @@
 ﻿using Divoom.Api.Interfaces;
-using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Divoom.Api.Models;
 
-[DataContract]
 public class SetDialRequest : ICommand
 {
-	[DataMember(Name = "Command")]
+	[JsonPropertyName("Command")]
 	public string Command => "Channel/SetClockSelectId";
 
-	[DataMember(Name = "ClockId")]
+	[JsonPropertyName("ClockId")]
 	public int DialId { get; set; }
 }

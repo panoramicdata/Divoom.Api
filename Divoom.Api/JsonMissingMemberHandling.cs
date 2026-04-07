@@ -3,12 +3,12 @@
 public enum JsonMissingMemberHandling
 {
 	/// <summary>
-	/// Use the default Newtonsoft Ignore missing members behavior
+	/// Ignore unmapped members during deserialization
 	/// </summary>
 	Ignore = 1,
 
 	/// <summary>
-	/// Use the default Newtonsoft Error on missing members behavior
+	/// Throw an error when unmapped members are encountered during deserialization
 	/// </summary>
 	ThrowOnError = 2,
 

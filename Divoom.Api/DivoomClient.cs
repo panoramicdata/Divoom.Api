@@ -26,7 +26,7 @@ public class DivoomClient : IDisposable
 
 		_refitSettings = new RefitSettings
 		{
-			ContentSerializer = new CustomNewtonsoftJsonContentSerializer(Options, _logger)
+			ContentSerializer = new CustomJsonContentSerializer(Options, _logger)
 		};
 
 		_httpClientHandler = new DivoomHttpClientHandler(options
