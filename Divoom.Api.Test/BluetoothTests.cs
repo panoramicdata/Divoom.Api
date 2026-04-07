@@ -590,7 +590,7 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 		var imageBytes = new Color[256];
 		var pixelIndex = 0;
 
-		using var bitmap = SKBitmap.Decode("../../../Images/ReportMagic.png");
+		using var bitmap = SKBitmap.Decode("../../../Images/Panoramic Data.png");
 
 		// Resize to 16x16 if needed
 		SKBitmap resizedBitmap;
