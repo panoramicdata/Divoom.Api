@@ -6,7 +6,7 @@
   <ItemGroup>
     <!-- Divoom.Api -->
     <PackageVersion Include="InTheHand.Net.Bluetooth" Version="4.2.4" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.9.50" />
     <PackageVersion Include="Refit" Version="10.1.6" />
     <!-- Divoom.Api.Test -->
