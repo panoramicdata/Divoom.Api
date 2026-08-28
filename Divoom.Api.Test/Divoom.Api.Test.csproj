@@ -31,8 +31,7 @@
 		<PackageReference Include="xunit.runner.visualstudio">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	<PackageReference Include="coverlet.collector" PrivateAssets="all" /></ItemGroup>
+		</PackageReference><PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" PrivateAssets="all" /></ItemGroup>
 
 	<ItemGroup>
 		<Content Include="xunit.runner.json">
