@@ -4,5 +4,6 @@
   "methodDisplayOptions": "all",
   "parallelizeAssembly": false,
   "parallelizeTestCollections": false,
-  "maxParallelThreads": 1
+  "maxParallelThreads": 1,
+  "failSkips": true
 }

@@ -267,14 +267,13 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 			.Bluetooth
 			.ViewClockAsync(
 				device,
-				TimeType.TwentyFourHours,
-				ClockType.FullScreenNegative,
-				false,
-				true,
-				false,
-				false,
-				Color.Red,
-				100,
+				new ClockViewSettings
+				{
+					TimeType = TimeType.TwentyFourHours,
+					ClockType = ClockType.FullScreenNegative,
+					ShowWeather = true,
+					Color = Color.Red
+				},
 				CancellationToken);
 	}
 
@@ -286,14 +285,16 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 			.Bluetooth
 			.ViewClockAsync(
 				device,
-				TimeType.TwentyFourHours,
-				ClockType.FullScreenNegative,
-				true,
-				true,
-				true,
-				true,
-				Color.Blue,
-				100,
+				new ClockViewSettings
+				{
+					TimeType = TimeType.TwentyFourHours,
+					ClockType = ClockType.FullScreenNegative,
+					ShowTime = true,
+					ShowWeather = true,
+					ShowTemperature = true,
+					ShowCalendar = true,
+					Color = Color.Blue
+				},
 				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
@@ -307,13 +308,13 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 			.Bluetooth
 			.ViewClock2Async(
 				device,
-				TimeType.TwelveHours,
-				ClockType.FullScreen,
-				false,
-				false,
-				false,
-				true,
-				Color.Yellow,
+				new ClockViewSettings
+				{
+					TimeType = TimeType.TwelveHours,
+					ClockType = ClockType.FullScreen,
+					ShowCalendar = true,
+					Color = Color.Yellow
+				},
 				CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
@@ -432,14 +433,13 @@ public class BluetoothTests(ITestOutputHelper testOutputHelper, BluetoothFixture
 			.Bluetooth
 			.ViewClockAsync(
 				device,
-				TimeType.TwelveHours,
-				ClockType.AnalogRound,
-				true,
-				false,
-				false,
-				false,
-				Color.Blue,
-				100,
+				new ClockViewSettings
+				{
+					TimeType = TimeType.TwelveHours,
+					ClockType = ClockType.AnalogRound,
+					ShowTime = true,
+					Color = Color.Blue
+				},
 				CancellationToken);
 
 		deviceResponseSet

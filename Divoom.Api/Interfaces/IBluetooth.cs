@@ -126,48 +126,26 @@ public interface IBluetooth
 	/// Views a clock display.
 	/// </summary>
 	/// <param name="device">The device.</param>
-	/// <param name="timeType">The time type.</param>
-	/// <param name="clockType">The clock type.</param>
-	/// <param name="showTime">Whether to show time.</param>
-	/// <param name="showWeather">Whether to show weather.</param>
-	/// <param name="showTemperature">Whether to show temperature.</param>
-	/// <param name="showCalendar">Whether to show calendar.</param>
-	/// <param name="color">The color.</param>
-	/// <param name="brightnessPercent">The brightness percentage.</param>
+	/// <param name="settings">The clock display settings.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
 	Task<DeviceResponseSet> ViewClockAsync(
 		DivoomBluetoothDevice device,
-		TimeType timeType,
-		ClockType clockType,
-		bool showTime,
-		bool showWeather,
-		bool showTemperature,
-		bool showCalendar,
-		Color color,
-		int brightnessPercent,
+		ClockViewSettings settings,
 		CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Views a clock display (variant 2).
 	/// </summary>
+	/// <remarks>
+	/// This variant sends the time and clock types to the device and ignores
+	/// <see cref="ClockViewSettings.BrightnessPercent"/>.
+	/// </remarks>
 	/// <param name="device">The device.</param>
-	/// <param name="timeType">The time type.</param>
-	/// <param name="clockType">The clock type.</param>
-	/// <param name="showTime">Whether to show time.</param>
-	/// <param name="showWeather">Whether to show weather.</param>
-	/// <param name="showTemperature">Whether to show temperature.</param>
-	/// <param name="showCalendar">Whether to show calendar.</param>
-	/// <param name="color">The color.</param>
+	/// <param name="settings">The clock display settings.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
 	public Task<DeviceResponse> ViewClock2Async(
 		DivoomBluetoothDevice device,
-		TimeType timeType,
-		ClockType clockType,
-		bool showTime,
-		bool showWeather,
-		bool showTemperature,
-		bool showCalendar,
-		Color color,
+		ClockViewSettings settings,
 		CancellationToken cancellationToken
 		);
 

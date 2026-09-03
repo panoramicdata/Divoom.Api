@@ -17,8 +17,6 @@ public class DivoomClient : IDisposable
 	/// </summary>
 	public DivoomClientOptions Options { get; }
 
-	private readonly ILogger _logger;
-	private readonly RefitSettings _refitSettings;
 	private readonly DivoomHttpClientHandler _httpClientHandler;
 	private readonly HttpClient _httpClient;
 	private readonly HttpClient _localHttpClient;
@@ -33,15 +31,13 @@ public class DivoomClient : IDisposable
 	{
 		Options = options;
 
-		_logger = logger;
-
-		_refitSettings = new RefitSettings
+		var refitSettings = new RefitSettings
 		{
-			ContentSerializer = new CustomJsonContentSerializer(Options, _logger)
+			ContentSerializer = new CustomJsonContentSerializer(Options, logger)
 		};
 
 		_httpClientHandler = new DivoomHttpClientHandler(options
-			?? throw new ArgumentNullException(nameof(options)), this, _logger);
+			?? throw new ArgumentNullException(nameof(options)), this, logger);
 
 		_httpClient = new HttpClient(_httpClientHandler)
 		{
@@ -55,11 +51,11 @@ public class DivoomClient : IDisposable
 			Timeout = TimeSpan.FromSeconds(options.HttpClientTimeoutSeconds)
 		};
 
-		Gz = RestService.For<IGz>(_httpClient, _refitSettings);
+		Gz = RestService.For<IGz>(_httpClient, refitSettings);
 
-		Channel = RestService.For<IChannel>(_localHttpClient, _refitSettings);
+		Channel = RestService.For<IChannel>(_localHttpClient, refitSettings);
 
-		Bluetooth = new BluetoothManager(_logger);
+		Bluetooth = new BluetoothManager(logger);
 	}
 
 	/// <summary>

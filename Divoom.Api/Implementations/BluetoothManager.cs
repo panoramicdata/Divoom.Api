@@ -207,33 +207,28 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 
 	public async Task<DeviceResponseSet> ViewClockAsync(
 		DivoomBluetoothDevice device,
-		TimeType timeType,
-		ClockType clockType,
-		bool showTime,
-		bool showWeather,
-		bool showTemperature,
-		bool showCalendar,
-		Color color,
-		int brightnessPercent,
+		ClockViewSettings settings,
 		CancellationToken cancellationToken)
 	{
-		if (brightnessPercent < 0 || brightnessPercent > 100)
+		ArgumentNullException.ThrowIfNull(settings);
+
+		if (settings.BrightnessPercent < 0 || settings.BrightnessPercent > 100)
 		{
-			throw new ArgumentOutOfRangeException(nameof(brightnessPercent));
+			throw new ArgumentOutOfRangeException(nameof(settings), "BrightnessPercent must be between 0 and 100.");
 		}
 
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
 		commandBuilder.Add((byte)Channel.Clock);
-		commandBuilder.Add(color.R);
-		commandBuilder.Add(color.G);
-		commandBuilder.Add(color.B);
-		commandBuilder.Add((byte)brightnessPercent);
+		commandBuilder.Add(settings.Color.R);
+		commandBuilder.Add(settings.Color.G);
+		commandBuilder.Add(settings.Color.B);
+		commandBuilder.Add((byte)settings.BrightnessPercent);
 		commandBuilder.Add(0x64);
-		commandBuilder.Add(showTime ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(showWeather ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(showTemperature ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(showCalendar ? (byte)0x01 : (byte)0x00);
+		commandBuilder.Add(settings.ShowTime ? (byte)0x01 : (byte)0x00);
+		commandBuilder.Add(settings.ShowWeather ? (byte)0x01 : (byte)0x00);
+		commandBuilder.Add(settings.ShowTemperature ? (byte)0x01 : (byte)0x00);
+		commandBuilder.Add(settings.ShowCalendar ? (byte)0x01 : (byte)0x00);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 		return responseSet;
@@ -241,28 +236,24 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 
 	public async Task<DeviceResponse> ViewClock2Async(
 		DivoomBluetoothDevice device,
-		TimeType timeType,
-		ClockType clockType,
-		bool showTime,
-		bool showWeather,
-		bool showTemperature,
-		bool showCalendar,
-		Color color,
+		ClockViewSettings settings,
 		CancellationToken cancellationToken
 		)
 	{
+		ArgumentNullException.ThrowIfNull(settings);
+
 		var commandBuilder = new CommandBuilder();
 		commandBuilder.Add((byte)Command.SetChannel);
 		commandBuilder.Add((byte)Channel.Clock);
-		commandBuilder.Add((byte)timeType);
-		commandBuilder.Add((byte)clockType);
-		commandBuilder.Add((byte)(showTime ? 1 : 0));
-		commandBuilder.Add((byte)(showWeather ? 1 : 0));
-		commandBuilder.Add((byte)(showTemperature ? 1 : 0));
-		commandBuilder.Add((byte)(showCalendar ? 1 : 0));
-		commandBuilder.Add(color.R);
-		commandBuilder.Add(color.G);
-		commandBuilder.Add(color.B);
+		commandBuilder.Add((byte)settings.TimeType);
+		commandBuilder.Add((byte)settings.ClockType);
+		commandBuilder.Add((byte)(settings.ShowTime ? 1 : 0));
+		commandBuilder.Add((byte)(settings.ShowWeather ? 1 : 0));
+		commandBuilder.Add((byte)(settings.ShowTemperature ? 1 : 0));
+		commandBuilder.Add((byte)(settings.ShowCalendar ? 1 : 0));
+		commandBuilder.Add(settings.Color.R);
+		commandBuilder.Add(settings.Color.G);
+		commandBuilder.Add(settings.Color.B);
 
 		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 		return responseSet.Responses.First();
@@ -582,47 +573,10 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 					default:
 						if (byteAsInt == 2 && byteIndex == length + 4)
 						{
-							// Get the CRC
-							var crc =
-								rawBytes[^2]
-								|
-								(ushort)(rawBytes[^1] << 8);
-
-							// Remove the CRC bytes
-							rawBytes.RemoveRange(rawBytes.Count - 2, 2);
-
-							// Sum the bytes
-							var sum = rawBytes.Sum(x => x);
-							if (sum != crc)
-							{
-								throw new FormatException("CRC does not match");
-							}
-
-							// Remove the Length bytes
-							if (rawBytes is null)
-							{
-								throw new InvalidOperationException("rawBytes is null");
-							}
-
-							rawBytes.RemoveRange(0, 2);
-
-							// Return a device response based on the raw bytes excluding length and CRC
-							return new(rawBytes);
+							return CompleteResponse(rawBytes);
 						}
 
-						if (byteAsInt == 3)
-						{
-							nextByteIsEscaped = true;
-							continue;
-						}
-
-						if (nextByteIsEscaped)
-						{
-							byteAsInt -= 3;
-							nextByteIsEscaped = false;
-						}
-
-						rawBytes.Add((byte)byteAsInt);
+						AppendPayloadByte(rawBytes, byteAsInt, ref nextByteIsEscaped);
 						continue;
 				}
 			}
@@ -633,6 +587,56 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		{
 			return new([]);
 		}
+	}
+
+	/// <summary>
+	/// Builds the response from a complete frame, verifying and then stripping the
+	/// trailing CRC and the leading length bytes, neither of which belong in the payload.
+	/// </summary>
+	private static DeviceResponse CompleteResponse(List<byte> rawBytes)
+	{
+		// Get the CRC
+		var crc =
+			rawBytes[^2]
+			|
+			(ushort)(rawBytes[^1] << 8);
+
+		// Remove the CRC bytes
+		rawBytes.RemoveRange(rawBytes.Count - 2, 2);
+
+		// Sum the bytes
+		var sum = rawBytes.Sum(x => x);
+		if (sum != crc)
+		{
+			throw new FormatException("CRC does not match");
+		}
+
+		// Remove the Length bytes
+		rawBytes.RemoveRange(0, 2);
+
+		// Return a device response based on the raw bytes excluding length and CRC
+		return new(rawBytes);
+	}
+
+	/// <summary>
+	/// Appends a payload byte, honouring the 0x03 escape prefix: the byte that follows
+	/// it was sent with 3 added to its value.
+	/// </summary>
+	private static void AppendPayloadByte(List<byte> rawBytes, int byteAsInt, ref bool nextByteIsEscaped)
+	{
+		if (byteAsInt == 3)
+		{
+			nextByteIsEscaped = true;
+			return;
+		}
+
+		if (nextByteIsEscaped)
+		{
+			byteAsInt -= 3;
+			nextByteIsEscaped = false;
+		}
+
+		rawBytes.Add((byte)byteAsInt);
 	}
 
 	private NetworkStream GetStream(DivoomBluetoothDevice device)

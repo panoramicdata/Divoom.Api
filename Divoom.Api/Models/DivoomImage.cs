@@ -18,18 +18,46 @@ public class DivoomImage
 	public int FrameTimeMs { get; }
 
 	/// <summary>
+	/// Initializes a new instance of the <see cref="DivoomImage"/> class with no frame duration.
+	/// </summary>
+	/// <param name="image">The pixel colors.</param>
+	public DivoomImage(Color[] image) : this(image, null)
+	{
+	}
+
+	/// <summary>
 	/// Initializes a new instance of the <see cref="DivoomImage"/> class.
 	/// </summary>
 	/// <param name="image">The pixel colors.</param>
-	/// <param name="frameTime">The optional frame duration.</param>
-	public DivoomImage(Color[] image, TimeSpan? frameTime = null)
+	/// <param name="frameTime">The frame duration, or <c>null</c> for none.</param>
+	public DivoomImage(Color[] image, TimeSpan? frameTime)
 	{
 		// See https://github.com/RomRider/node-divoom-timebox-evo/blob/master/PROTOCOL.md#animations-images-and-text
 
+		BuildPalette(image);
+
+		var bitsPerPixel = (int)Math.Ceiling(Math.Log(_palette.Count, 2));
+
+		if (bitsPerPixel == 8)
+		{
+			foreach (var pixel in image)
+			{
+				_encodedImage.Add((byte)_palette.IndexOf(pixel));
+			}
+		}
+		else
+		{
+			EncodePacked(image, bitsPerPixel);
+		}
+
+		FrameTimeMs = (int)(frameTime?.TotalMilliseconds ?? 0);
+	}
+
+	private void BuildPalette(Color[] image)
+	{
 		foreach (var pixel in image)
 		{
-			var paletteIndex = _palette.IndexOf(pixel);
-			if (paletteIndex == -1)
+			if (_palette.IndexOf(pixel) == -1)
 			{
 				_palette.Add(pixel);
 				if (_palette.Count > 256)
@@ -45,52 +73,41 @@ public class DivoomImage
 		{
 			_palette.Add(Color.Black);
 		}
+	}
 
-		var bitsPerPixel = (int)Math.Ceiling(Math.Log(_palette.Count, 2));
+	private void EncodePacked(Color[] image, int bitsPerPixel)
+	{
+		_encodedImage.Add(0);
 
-		if (bitsPerPixel == 8)
+		var encodedImageByteIndex = 0;
+		var encodedImageByteBitIndex = 0;
+		foreach (var pixel in image)
 		{
-			foreach (var pixel in image)
+			var paletteIndex = (byte)_palette.IndexOf(pixel);
+			for (var bitIndex = 0; bitIndex < bitsPerPixel; bitIndex++)
 			{
-				_encodedImage.Add((byte)_palette.IndexOf(pixel));
-			}
-		}
-		else
-		{
-			_encodedImage.Add(0);
-
-			var encodedImageByteIndex = 0;
-			var encodedImageByteBitIndex = 0;
-			foreach (var pixel in image)
-			{
-				var paletteIndex = (byte)_palette.IndexOf(pixel);
-				for (var bitIndex = 0; bitIndex < bitsPerPixel; bitIndex++)
+				if (encodedImageByteBitIndex == 8)
 				{
-					if (encodedImageByteBitIndex == 8)
-					{
-						_encodedImage.Add(0);
-						encodedImageByteIndex++;
-						encodedImageByteBitIndex = 0;
-					}
-
-					var bit = (paletteIndex & (1 << bitIndex)) != 0;
-					if (bit)
-					{
-						_encodedImage[encodedImageByteIndex] |= (byte)(1 << encodedImageByteBitIndex);
-					}
-
-					encodedImageByteBitIndex++;
+					_encodedImage.Add(0);
+					encodedImageByteIndex++;
+					encodedImageByteBitIndex = 0;
 				}
-			}
 
-			// Reverse the order of the bits in each byte of encoded image
-			for (var i = 0; i < _encodedImage.Count; i++)
-			{
-				_encodedImage[i] = (byte)((_encodedImage[i] * 0x0202020202UL & 0x010884422010UL) % 1023);
+				var bit = (paletteIndex & (1 << bitIndex)) != 0;
+				if (bit)
+				{
+					_encodedImage[encodedImageByteIndex] |= (byte)(1 << encodedImageByteBitIndex);
+				}
+
+				encodedImageByteBitIndex++;
 			}
 		}
 
-		FrameTimeMs = (int)(frameTime?.TotalMilliseconds ?? 0);
+		// Reverse the order of the bits in each byte of encoded image
+		for (var i = 0; i < _encodedImage.Count; i++)
+		{
+			_encodedImage[i] = (byte)((_encodedImage[i] * 0x0202020202UL & 0x010884422010UL) % 1023);
+		}
 	}
 
 	/// <summary>
