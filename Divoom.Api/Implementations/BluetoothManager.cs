@@ -76,10 +76,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	DivoomBluetoothDevice device,
 	CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.GetSettings);
-
-		var deviceResponse = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		var deviceResponse = await SendCommandAsync(device, cancellationToken, (byte)Command.GetSettings);
 
 		return new DeviceSettings(deviceResponse);
 	}
@@ -88,9 +85,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.GetWeather);
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		var responseSet = await SendCommandAsync(device, cancellationToken, (byte)Command.GetWeather);
 		return responseSet.Responses.Single();
 	}
 
@@ -109,12 +104,11 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			throw new ArgumentOutOfRangeException(nameof(brightness), "Should be in the range 0 to 100");
 		}
 
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetBrightness);
-		commandBuilder.Add((byte)brightness);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetBrightness,
+			(byte)brightness);
 	}
 
 	public async Task SetMuteStateAsync(
@@ -122,11 +116,11 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		MuteState muteState,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetMuteState);
-		commandBuilder.Add((byte)muteState);
-
-		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		_ = await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetMuteState,
+			(byte)muteState);
 	}
 
 	public async Task SetTemperatureUnitAsync(
@@ -134,11 +128,11 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		TemperatureUnit temperatureUnit,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetTemperatureUnit);
-		commandBuilder.Add((byte)temperatureUnit);
-
-		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		_ = await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetTemperatureUnit,
+			(byte)temperatureUnit);
 	}
 
 	public async Task SetDateTimeAsync(
@@ -146,17 +140,17 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DateTime dateTime,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetDateTime);
-		commandBuilder.Add((byte)(dateTime.Year & 0xff));
-		commandBuilder.Add((byte)(dateTime.Year >> 8 & 0xff));
-		commandBuilder.Add((byte)dateTime.Month);
-		commandBuilder.Add((byte)dateTime.Day);
-		commandBuilder.Add((byte)dateTime.Hour);
-		commandBuilder.Add((byte)dateTime.Minute);
-		commandBuilder.Add((byte)dateTime.Second);
-
-		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		_ = await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetDateTime,
+			(byte)(dateTime.Year & 0xff),
+			(byte)(dateTime.Year >> 8 & 0xff),
+			(byte)dateTime.Month,
+			(byte)dateTime.Day,
+			(byte)dateTime.Hour,
+			(byte)dateTime.Minute,
+			(byte)dateTime.Second);
 	}
 
 	public async Task<DeviceResponseSet> SetWeatherAsync(
@@ -165,16 +159,14 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		WeatherType weatherType,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetWeather);
-
 		var temperatureByte = (byte)(temperature < 0 ? temperature + 256 : temperature);
 
-		commandBuilder.Add(temperatureByte);
-		commandBuilder.Add((byte)weatherType);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetWeather,
+			temperatureByte,
+			(byte)weatherType);
 	}
 
 	public async Task SetVolumeAsync(
@@ -194,11 +186,11 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			volume = 2;
 		}
 
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetVolume);
-		commandBuilder.Add((byte)volume);
-
-		_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		_ = await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetVolume,
+			(byte)volume);
 	}
 
 	#endregion
@@ -217,21 +209,20 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			throw new ArgumentOutOfRangeException(nameof(settings), "BrightnessPercent must be between 0 and 100.");
 		}
 
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Clock);
-		commandBuilder.Add(settings.Color.R);
-		commandBuilder.Add(settings.Color.G);
-		commandBuilder.Add(settings.Color.B);
-		commandBuilder.Add((byte)settings.BrightnessPercent);
-		commandBuilder.Add(0x64);
-		commandBuilder.Add(settings.ShowTime ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(settings.ShowWeather ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(settings.ShowTemperature ? (byte)0x01 : (byte)0x00);
-		commandBuilder.Add(settings.ShowCalendar ? (byte)0x01 : (byte)0x00);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetChannel,
+			(byte)Channel.Clock,
+			settings.Color.R,
+			settings.Color.G,
+			settings.Color.B,
+			(byte)settings.BrightnessPercent,
+			0x64,
+			settings.ShowTime ? (byte)0x01 : (byte)0x00,
+			settings.ShowWeather ? (byte)0x01 : (byte)0x00,
+			settings.ShowTemperature ? (byte)0x01 : (byte)0x00,
+			settings.ShowCalendar ? (byte)0x01 : (byte)0x00);
 	}
 
 	public async Task<DeviceResponse> ViewClock2Async(
@@ -242,20 +233,21 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	{
 		ArgumentNullException.ThrowIfNull(settings);
 
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Clock);
-		commandBuilder.Add((byte)settings.TimeType);
-		commandBuilder.Add((byte)settings.ClockType);
-		commandBuilder.Add((byte)(settings.ShowTime ? 1 : 0));
-		commandBuilder.Add((byte)(settings.ShowWeather ? 1 : 0));
-		commandBuilder.Add((byte)(settings.ShowTemperature ? 1 : 0));
-		commandBuilder.Add((byte)(settings.ShowCalendar ? 1 : 0));
-		commandBuilder.Add(settings.Color.R);
-		commandBuilder.Add(settings.Color.G);
-		commandBuilder.Add(settings.Color.B);
+		var responseSet = await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetChannel,
+			(byte)Channel.Clock,
+			(byte)settings.TimeType,
+			(byte)settings.ClockType,
+			(byte)(settings.ShowTime ? 1 : 0),
+			(byte)(settings.ShowWeather ? 1 : 0),
+			(byte)(settings.ShowTemperature ? 1 : 0),
+			(byte)(settings.ShowCalendar ? 1 : 0),
+			settings.Color.R,
+			settings.Color.G,
+			settings.Color.B);
 
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
 		return responseSet.Responses.First();
 	}
 
@@ -263,10 +255,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.GetVolume);
-
-		var deviceReponseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		var deviceReponseSet = await SendCommandAsync(device, cancellationToken, (byte)Command.GetVolume);
 
 		var deviceResponse = deviceReponseSet.Responses.Single();
 
@@ -277,10 +266,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.GetMuteState);
-
-		var deviceReponseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
+		var deviceReponseSet = await SendCommandAsync(device, cancellationToken, (byte)Command.GetMuteState);
 
 		var deviceResponse = deviceReponseSet.Responses[^1].Bytes[0];
 
@@ -300,20 +286,17 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			throw new ArgumentOutOfRangeException(nameof(brightnessPercent));
 		}
 
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Lighting);
-		commandBuilder.Add(color.R);
-		commandBuilder.Add(color.G);
-		commandBuilder.Add(color.B);
-
-		commandBuilder.Add((byte)brightnessPercent);
-
-		commandBuilder.Add((byte)lightingPattern);
-
-		commandBuilder.Add((byte)powerStatus);
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetChannel,
+			(byte)Channel.Lighting,
+			color.R,
+			color.G,
+			color.B,
+			(byte)brightnessPercent,
+			(byte)lightingPattern,
+			(byte)powerStatus);
 	}
 
 	/// <summary>
@@ -328,12 +311,11 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		Channel channel,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)channel);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetChannel,
+			(byte)channel);
 	}
 
 	public async Task<DeviceResponseSet> ViewStopwatchAsync(
@@ -343,12 +325,11 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	{
 		_ = await SetBrightnessAsync(device, 100, cancellationToken);
 
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add(0x01);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetChannel,
+			0x01);
 	}
 
 	/// <summary>
@@ -363,13 +344,12 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		VisualizationType visualizationType,
 		CancellationToken cancellationToken)
 	{
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Visualisation);
-		commandBuilder.Add((byte)visualizationType);
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetChannel,
+			(byte)Channel.Visualisation,
+			(byte)visualizationType);
 	}
 
 	/// <summary>
@@ -400,17 +380,16 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		var redScoreUshort = (ushort)redScore;
 		var blueScoreUshort = (ushort)blueScore;
 
-		var commandBuilder = new CommandBuilder();
-		commandBuilder.Add((byte)Command.SetChannel);
-		commandBuilder.Add((byte)Channel.Scoreboard);
-		commandBuilder.Add(0x00);
-		commandBuilder.Add((byte)(redScoreUshort & 0xff));
-		commandBuilder.Add((byte)(redScoreUshort >> 8 & 0xff));
-		commandBuilder.Add((byte)(blueScoreUshort & 0xff));
-		commandBuilder.Add((byte)(blueScoreUshort >> 8 & 0xff));
-
-		var responseSet = await SendCommandAsync(device, commandBuilder, cancellationToken);
-		return responseSet;
+		return await SendCommandAsync(
+			device,
+			cancellationToken,
+			(byte)Command.SetChannel,
+			(byte)Channel.Scoreboard,
+			0x00,
+			(byte)(redScoreUshort & 0xff),
+			(byte)(redScoreUshort >> 8 & 0xff),
+			(byte)(blueScoreUshort & 0xff),
+			(byte)(blueScoreUshort >> 8 & 0xff));
 	}
 
 	/// <summary>
@@ -522,6 +501,23 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	}
 
 	#region Private
+
+	/// <summary>
+	/// Sends a command made up of a fixed sequence of bytes, in the order given.
+	/// </summary>
+	private Task<DeviceResponseSet> SendCommandAsync(
+		DivoomBluetoothDevice device,
+		CancellationToken cancellationToken,
+		params byte[] commandBytes)
+	{
+		var commandBuilder = new CommandBuilder();
+		foreach (var commandByte in commandBytes)
+		{
+			commandBuilder.Add(commandByte);
+		}
+
+		return SendCommandAsync(device, commandBuilder, cancellationToken);
+	}
 
 	private async Task<DeviceResponseSet> SendCommandAsync(
 		DivoomBluetoothDevice device,
