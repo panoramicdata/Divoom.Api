@@ -5,9 +5,11 @@ using Color = System.Drawing.Color;
 namespace Divoom.Api.Test;
 
 /// <summary>
-/// <see cref="BluetoothTests"/> covering the clock, channel, lighting, visualization, stopwatch and scoreboard views.
+/// Bluetooth tests covering the clock, channel, lighting, visualization, stopwatch and scoreboard views.
 /// </summary>
-public partial class BluetoothTests
+[Collection("Bluetooth")]
+public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFixture fixture)
+	: BluetoothTestBase(testOutputHelper, fixture)
 {
 	[Fact]
 	public async Task ViewTime_Succeeds()

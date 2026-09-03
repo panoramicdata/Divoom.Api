@@ -6,9 +6,11 @@ using Color = System.Drawing.Color;
 namespace Divoom.Api.Test;
 
 /// <summary>
-/// <see cref="BluetoothTests"/> covering displaying images and animations.
+/// Bluetooth tests covering displaying images and animations.
 /// </summary>
-public partial class BluetoothTests
+[Collection("Bluetooth")]
+public class BluetoothImageTests(ITestOutputHelper testOutputHelper, BluetoothFixture fixture)
+	: BluetoothTestBase(testOutputHelper, fixture)
 {
 	[Fact]
 	public async Task ViewImage_Constructed_Succeeds()

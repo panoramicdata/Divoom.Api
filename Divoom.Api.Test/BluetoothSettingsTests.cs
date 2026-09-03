@@ -4,9 +4,11 @@ using Divoom.Api.Models;
 namespace Divoom.Api.Test;
 
 /// <summary>
-/// <see cref="BluetoothTests"/> covering brightness, volume, mute, temperature unit and date/time settings.
+/// Bluetooth tests covering brightness, volume, mute, temperature unit and date/time settings.
 /// </summary>
-public partial class BluetoothTests
+[Collection("Bluetooth")]
+public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, BluetoothFixture fixture)
+	: BluetoothTestBase(testOutputHelper, fixture)
 {
 	[Fact]
 	public async Task SetBrightness_Succeeds()

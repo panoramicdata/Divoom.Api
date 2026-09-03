@@ -5,9 +5,11 @@ using Color = System.Drawing.Color;
 namespace Divoom.Api.Test;
 
 /// <summary>
-/// <see cref="BluetoothTests"/> covering reading, setting and displaying the weather.
+/// Bluetooth tests covering reading, setting and displaying the weather.
 /// </summary>
-public partial class BluetoothTests
+[Collection("Bluetooth")]
+public class BluetoothWeatherTests(ITestOutputHelper testOutputHelper, BluetoothFixture fixture)
+	: BluetoothTestBase(testOutputHelper, fixture)
 {
 	[Fact]
 	public async Task GetWeather_Succeeds()
