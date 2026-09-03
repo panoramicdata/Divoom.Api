@@ -16,6 +16,11 @@ namespace Divoom.Api.Implementations;
 
 internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 {
+	/// <summary>
+	/// The start byte plus the two length bytes that precede a response payload.
+	/// </summary>
+	private const int HeaderByteCount = 3;
+
 	private readonly Dictionary<ulong, NetworkStream> _bluetoothClients = [];
 
 	#region Get
@@ -546,35 +551,20 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			while (stream.DataAvailable)
 			{
 				var byteAsInt = stream.ReadByte();
+				var index = byteIndex++;
 
-				// The first byte should be 0x01
-				switch (byteIndex++)
+				if (index < HeaderByteCount)
 				{
-					case 0:
-						if (byteAsInt != 0x01)
-						{
-							throw new FormatException("First byte should be 0x01");
-						}
-
-						// All is well
-						continue;
-					case 1:
-						length = (byte)(byteAsInt & 0xff);
-						rawBytes.Add((byte)byteAsInt);
-						continue;
-					case 2:
-						length |= ((uint)((byte)(byteAsInt & 0xff))) << 8;
-						rawBytes.Add((byte)byteAsInt);
-						continue;
-					default:
-						if (byteAsInt == 2 && byteIndex == length + 4)
-						{
-							return CompleteResponse(rawBytes);
-						}
-
-						AppendPayloadByte(rawBytes, byteAsInt, ref nextByteIsEscaped);
-						continue;
+					AppendHeaderByte(rawBytes, byteAsInt, index, ref length);
+					continue;
 				}
+
+				if (byteAsInt == 2 && byteIndex == length + 4)
+				{
+					return CompleteResponse(rawBytes);
+				}
+
+				AppendPayloadByte(rawBytes, byteAsInt, ref nextByteIsEscaped);
 			}
 
 			return new([]);
@@ -582,6 +572,34 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		catch
 		{
 			return new([]);
+		}
+	}
+
+	/// <summary>
+	/// Appends one of the three header bytes: the 0x01 start byte, then the two
+	/// little-endian length bytes, which are kept because the CRC is summed over them.
+	/// </summary>
+	private static void AppendHeaderByte(List<byte> rawBytes, int byteAsInt, int index, ref uint length)
+	{
+		switch (index)
+		{
+			case 0:
+				// The first byte should be 0x01
+				if (byteAsInt != 0x01)
+				{
+					throw new FormatException("First byte should be 0x01");
+				}
+
+				// All is well
+				return;
+			case 1:
+				length = (byte)(byteAsInt & 0xff);
+				rawBytes.Add((byte)byteAsInt);
+				return;
+			default:
+				length |= ((uint)((byte)(byteAsInt & 0xff))) << 8;
+				rawBytes.Add((byte)byteAsInt);
+				return;
 		}
 	}
 

@@ -47,23 +47,19 @@ public class GzTests(ITestOutputHelper testOutputHelper) : Test(testOutputHelper
 	}
 
 	[Fact]
-	public async Task GetImagesAsync_Succeeds()
-	{
-		var response = await Client.Gz.GetImagesAsync(new GetImagesRequest
-		{
-			DeviceId = Client.Options.DeviceId,
-			DeviceMac = Client.Options.DeviceMac
-		}, CancellationToken);
-		response.Should().NotBeNull();
-		response.ReturnCode.Should().Be(0);
-		response.DeviceId.Should().NotBe(0);
-		response.Images.Should().NotBeNull();
-	}
+	public Task GetImagesAsync_Succeeds()
+		=> AssertImagesReturnedAsync(Client.Gz.GetImagesAsync);
 
 	[Fact]
-	public async Task GetLikedImagesAsync_Succeeds()
+	public Task GetLikedImagesAsync_Succeeds()
+		=> AssertImagesReturnedAsync(Client.Gz.GetLikedImagesAsync);
+
+	// GetImagesAsync and GetLikedImagesAsync take the same request and return the same
+	// response shape, so they share one request and one set of assertions.
+	private async Task AssertImagesReturnedAsync(
+		Func<GetImagesRequest, CancellationToken, Task<GetImagesResponse>> getImagesAsync)
 	{
-		var response = await Client.Gz.GetLikedImagesAsync(new GetImagesRequest
+		var response = await getImagesAsync(new GetImagesRequest
 		{
 			DeviceId = Client.Options.DeviceId,
 			DeviceMac = Client.Options.DeviceMac

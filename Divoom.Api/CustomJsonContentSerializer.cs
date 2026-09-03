@@ -80,16 +80,9 @@ public class CustomJsonContentSerializer : IHttpContentSerializer
 		catch (JsonException ex)
 		{
 			_logger.LogWarning(ex, "{Message}", ex.Message);
+			ReportMissingMember<T>(ex, sourceJson);
 
-			if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None
-				&& _logger.IsEnabled(_options.JsonMissingMemberResponseLogLevel))
-			{
-				_logger.Log(_options.JsonMissingMemberResponseLogLevel, "Missing Member Response JSON:\n{SourceJson}", sourceJson);
-			}
-
-			// Execute the action if one was provided
-			_options.JsonMissingMemberAction?.Invoke(typeof(T), ex, sourceJson);
-
+			// Retry with the lenient options, so the unmapped member does not fail the call
 			return JsonSerializer.Deserialize<T>(sourceJson, _jsonSerializerOptionsWithIgnore);
 		}
 	}
@@ -108,17 +101,26 @@ public class CustomJsonContentSerializer : IHttpContentSerializer
 		}
 		catch (JsonException ex)
 		{
-			if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None
-				&& _logger.IsEnabled(_options.JsonMissingMemberResponseLogLevel))
-			{
-				_logger.Log(_options.JsonMissingMemberResponseLogLevel, "Missing Member Response JSON:\n{SourceJson}", sourceJson);
-			}
-
-			// Execute the action if one was provided
-			_options.JsonMissingMemberAction?.Invoke(typeof(T), ex, sourceJson);
+			ReportMissingMember<T>(ex, sourceJson);
 
 			throw;
 		}
+	}
+
+	/// <summary>
+	/// Logs the offending JSON at the configured level and hands it to the caller's
+	/// action, if one was provided. Shared by both missing-member handling modes.
+	/// </summary>
+	private void ReportMissingMember<T>(JsonException ex, string sourceJson)
+	{
+		if (_options.JsonMissingMemberResponseLogLevel != LogLevel.None
+			&& _logger.IsEnabled(_options.JsonMissingMemberResponseLogLevel))
+		{
+			_logger.Log(_options.JsonMissingMemberResponseLogLevel, "Missing Member Response JSON:\n{SourceJson}", sourceJson);
+		}
+
+		// Execute the action if one was provided
+		_options.JsonMissingMemberAction?.Invoke(typeof(T), ex, sourceJson);
 	}
 
 	/// <inheritdoc />
