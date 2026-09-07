@@ -65,7 +65,10 @@ public async ValueTask DisposeAsync()
 ## Test Organization
 
 ### Bluetooth Tests (Sequential)
-- `BluetoothTests.cs` - All Bluetooth communication tests
+- `BluetoothTests.cs`, `BluetoothSettingsTests.cs`, `BluetoothWeatherTests.cs`,
+  `BluetoothViewTests.cs`, `BluetoothImageTests.cs` - All Bluetooth communication tests.
+  Each carries `[Collection("Bluetooth")]` and derives from `BluetoothTestBase.cs`, so
+  they share one fixture and therefore one connection to the device.
 - **Must run**: One at a time
 - **Delay**: 500ms before and after each test
 - **Reason**: Bluetooth connection is exclusive, cannot be shared

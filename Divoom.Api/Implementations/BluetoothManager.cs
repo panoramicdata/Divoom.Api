@@ -1,4 +1,4 @@
-﻿using Divoom.Api.Interfaces;
+using Divoom.Api.Interfaces;
 using Divoom.Api.Models;
 using InTheHand.Net;
 using InTheHand.Net.Bluetooth;
@@ -42,26 +42,17 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 
 			if (discoveryMode is DiscoveryMode.All or DiscoveryMode.PairedOnly)
 			{
-				bluetoothDevices.AddRange(bluetoothClient.PairedDevices);
+				await AddPairedDevicesAsync(bluetoothClient, bluetoothDevices);
 			}
 
 			if (discoveryMode is DiscoveryMode.All or DiscoveryMode.DiscoveredOnly)
 			{
-				await foreach (var bluetoothDevice in bluetoothClient.DiscoverDevicesAsync(cancellationToken))
-				{
-					bluetoothDevices.Add(bluetoothDevice);
-				}
+				await AddDiscoveredDevicesAsync(bluetoothClient, bluetoothDevices, cancellationToken);
 			}
 
 			// Filter for Divoom/TimeBox devices (case-insensitive)
 			// Common device names: "TimeBox", "TimeBox-Evo", "PIXOO64", "Pixoo", "Divoom"
-			return [.. bluetoothDevices
-				.Where(x => x.DeviceName != null && (
-					x.DeviceName.Contains("TimeBox", StringComparison.OrdinalIgnoreCase) ||
-					x.DeviceName.Contains("PIXOO", StringComparison.OrdinalIgnoreCase) ||
-					x.DeviceName.Contains("Divoom", StringComparison.OrdinalIgnoreCase)
-				))
-				.Select(x => new DivoomBluetoothDevice(x))];
+			return FilterDivoomDevices(bluetoothDevices);
 		}
 		catch (Exception ex)
 		{
@@ -436,15 +427,6 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		var packetIndex = 0;
 		while (true)
 		{
-			var commandBuilder = new CommandBuilder();
-
-			// HEAD
-			commandBuilder.Add((byte)Command.SetAnimationFrame);
-
-			// Animation length
-			commandBuilder.Add((byte)(animationLength & 0xff));
-			commandBuilder.Add((byte)(animationLength >> 8 & 0xff));
-
 			var frameDataBytes = animation.GetPacket(packetIndex);
 
 			if (frameDataBytes.Count == 0)
@@ -452,12 +434,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 				break;
 			}
 
-			commandBuilder.Add((byte)packetIndex++);
-
-			foreach (var frameDataByte in frameDataBytes)
-			{
-				commandBuilder.Add(frameDataByte);
-			}
+			var commandBuilder = BuildAnimationFrameCommand(animationLength, packetIndex++, frameDataBytes);
 
 			_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
 		}
@@ -500,6 +477,73 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	}
 
 	#region Private
+
+	/// <summary>
+	/// Adds all paired devices to the collection.
+	/// </summary>
+	private static Task AddPairedDevicesAsync(
+		BluetoothClient bluetoothClient,
+		List<BluetoothDeviceInfo> bluetoothDevices)
+	{
+		bluetoothDevices.AddRange(bluetoothClient.PairedDevices);
+
+		return Task.CompletedTask;
+	}
+
+	/// <summary>
+	/// Discovers nearby devices and adds them to the collection.
+	/// </summary>
+	private static async Task AddDiscoveredDevicesAsync(
+		BluetoothClient bluetoothClient,
+		List<BluetoothDeviceInfo> bluetoothDevices,
+		CancellationToken cancellationToken)
+	{
+		await foreach (var bluetoothDevice in bluetoothClient.DiscoverDevicesAsync(cancellationToken))
+		{
+			bluetoothDevices.Add(bluetoothDevice);
+		}
+	}
+
+	/// <summary>
+	/// Filters for Divoom/TimeBox devices (case-insensitive)
+	/// </summary>
+	private static List<DivoomBluetoothDevice> FilterDivoomDevices(IEnumerable<BluetoothDeviceInfo> bluetoothDevices)
+	{
+		return [.. bluetoothDevices
+			.Where(x => x.DeviceName != null && (
+				x.DeviceName.Contains("TimeBox", StringComparison.OrdinalIgnoreCase) ||
+				x.DeviceName.Contains("PIXOO", StringComparison.OrdinalIgnoreCase) ||
+				x.DeviceName.Contains("Divoom", StringComparison.OrdinalIgnoreCase)
+			))
+			.Select(x => new DivoomBluetoothDevice(x))];
+	}
+
+	/// <summary>
+	/// Builds the command for a single animation frame.
+	/// </summary>
+	private static CommandBuilder BuildAnimationFrameCommand(
+		int animationLength,
+		int packetIndex,
+		List<byte> frameDataBytes)
+	{
+		var commandBuilder = new CommandBuilder();
+
+		// HEAD
+		commandBuilder.Add((byte)Command.SetAnimationFrame);
+
+		// Animation length
+		commandBuilder.Add((byte)(animationLength & 0xff));
+		commandBuilder.Add((byte)(animationLength >> 8 & 0xff));
+
+		commandBuilder.Add((byte)packetIndex);
+
+		foreach (var frameDataByte in frameDataBytes)
+		{
+			commandBuilder.Add(frameDataByte);
+		}
+
+		return commandBuilder;
+	}
 
 	/// <summary>
 	/// Sends a command made up of a fixed sequence of bytes, in the order given.
