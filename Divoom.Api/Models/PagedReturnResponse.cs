@@ -11,5 +11,5 @@ public abstract class PagedReturnResponse : ReturnResponse
 	/// The total available items.
 	/// </summary>
 	[JsonPropertyName("TotalNum")]
-	public string TotalCount { get; set; } = string.Empty;
+	public int TotalCount { get; set; }
 }
