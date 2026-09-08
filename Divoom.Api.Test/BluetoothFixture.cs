@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Text.Json;
 
 namespace Divoom.Api.Test;
 
@@ -17,23 +16,8 @@ public class BluetoothFixture : IDisposable
 
 	public BluetoothFixture()
 	{
-		Options = LoadDivoomClientOptions();
+		Options = TestConfiguration.LoadDivoomClientOptions();
 		Client = new DivoomClient(Options, NullLogger.Instance);
-	}
-
-	private static DivoomClientOptions LoadDivoomClientOptions()
-	{
-		var fileInfo = new FileInfo("../../../appsettings.json");
-
-		if (!fileInfo.Exists)
-		{
-			throw new InvalidOperationException(
-				"Missing appsettings.json. Please copy the appsettings.example.json in the project root folder and set the various values appropriately.");
-		}
-
-		var options = JsonSerializer.Deserialize<DivoomClientOptions>(File.ReadAllText(fileInfo.FullName));
-
-		return options ?? throw new InvalidOperationException("Configuration did not deserialize");
 	}
 
 	protected virtual void Dispose(bool disposing)

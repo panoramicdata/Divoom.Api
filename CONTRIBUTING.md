@@ -1,4 +1,4 @@
-# Contributing
+﻿# Contributing
 
 Thank you for your interest in contributing to this project!
 
@@ -26,6 +26,10 @@ Thank you for your interest in contributing to this project!
 - Use xUnit v3 for all tests
 - Use AwesomeAssertions for fluent assertions
 - Ensure all existing tests pass before submitting a PR
+
+Most of the tests are integration tests that talk to a real Divoom device, so they need
+your device's details in User Secrets before they will run. See
+[Divoom.Api.Test/UserSecretsGuide.md](Divoom.Api.Test/UserSecretsGuide.md).
 
 ## License
 
