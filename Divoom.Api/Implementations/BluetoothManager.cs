@@ -1,14 +1,10 @@
-using Divoom.Api.Interfaces;
+﻿using Divoom.Api.Interfaces;
 using Divoom.Api.Models;
-using InTheHand.Net;
-using InTheHand.Net.Bluetooth;
-using InTheHand.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,58 +12,24 @@ namespace Divoom.Api.Implementations;
 
 internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 {
-	private readonly Dictionary<ulong, NetworkStream> _bluetoothClients = [];
+	private readonly DeviceConnection _connection = new();
 
 	#region Get
 
 	public Task<List<DivoomBluetoothDevice>> GetDevicesAsync(
-		CancellationToken cancellationToken) => GetDevicesAsync(DiscoveryMode.PairedOnly, cancellationToken);
+		CancellationToken cancellationToken)
+		=> GetDevicesAsync(DiscoveryMode.PairedOnly, cancellationToken);
 
-	public async Task<List<DivoomBluetoothDevice>> GetDevicesAsync(
+	public Task<List<DivoomBluetoothDevice>> GetDevicesAsync(
 		DiscoveryMode discoveryMode,
 		CancellationToken cancellationToken)
-	{
-		if (logger.IsEnabled(LogLevel.Information))
-		{
-			logger.LogInformation("Starting Bluetooth device discovery with mode: {DiscoveryMode}", discoveryMode);
-		}
-
-		try
-		{
-			// Enumerate all Bluetooth devices.
-			var bluetoothDevices = new List<BluetoothDeviceInfo>();
-
-			// The modern InTheHand.Net.Bluetooth library discovers all paired and nearby devices
-			var bluetoothClient = new BluetoothClient();
-
-			if (discoveryMode is DiscoveryMode.All or DiscoveryMode.PairedOnly)
-			{
-				await AddPairedDevicesAsync(bluetoothClient, bluetoothDevices);
-			}
-
-			if (discoveryMode is DiscoveryMode.All or DiscoveryMode.DiscoveredOnly)
-			{
-				await AddDiscoveredDevicesAsync(bluetoothClient, bluetoothDevices, cancellationToken);
-			}
-
-			// Filter for Divoom/TimeBox devices (case-insensitive)
-			// Common device names: "TimeBox", "TimeBox-Evo", "PIXOO64", "Pixoo", "Divoom"
-			return FilterDivoomDevices(bluetoothDevices);
-		}
-		catch (Exception ex)
-		{
-			// Log or wrap the exception with more context
-			throw new InvalidOperationException(
-				"Failed to discover Bluetooth devices. Ensure Bluetooth is enabled and you have proper permissions.",
-				ex);
-		}
-	}
+		=> BluetoothDeviceDiscovery.GetDevicesAsync(logger, discoveryMode, cancellationToken);
 
 	public async Task<DeviceSettings> GetSettingsAsync(
 	DivoomBluetoothDevice device,
 	CancellationToken cancellationToken)
 	{
-		var deviceResponse = await SendCommandAsync(device, cancellationToken, (byte)Command.GetSettings);
+		var deviceResponse = await _connection.SendCommandAsync(device, cancellationToken, (byte)Command.GetSettings);
 
 		return new DeviceSettings(deviceResponse);
 	}
@@ -76,7 +38,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
-		var responseSet = await SendCommandAsync(device, cancellationToken, (byte)Command.GetWeather);
+		var responseSet = await _connection.SendCommandAsync(device, cancellationToken, (byte)Command.GetWeather);
 		return responseSet.Responses.Single();
 	}
 
@@ -95,7 +57,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			throw new ArgumentOutOfRangeException(nameof(brightness), "Should be in the range 0 to 100");
 		}
 
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetBrightness,
@@ -107,7 +69,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		MuteState muteState,
 		CancellationToken cancellationToken)
 	{
-		_ = await SendCommandAsync(
+		_ = await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetMuteState,
@@ -119,7 +81,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		TemperatureUnit temperatureUnit,
 		CancellationToken cancellationToken)
 	{
-		_ = await SendCommandAsync(
+		_ = await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetTemperatureUnit,
@@ -131,7 +93,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DateTime dateTime,
 		CancellationToken cancellationToken)
 	{
-		_ = await SendCommandAsync(
+		_ = await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetDateTime,
@@ -152,7 +114,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	{
 		var temperatureByte = (byte)(temperature < 0 ? temperature + 256 : temperature);
 
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetWeather,
@@ -177,7 +139,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			volume = 2;
 		}
 
-		_ = await SendCommandAsync(
+		_ = await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetVolume,
@@ -200,7 +162,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			throw new ArgumentOutOfRangeException(nameof(settings), "BrightnessPercent must be between 0 and 100.");
 		}
 
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetChannel,
@@ -224,7 +186,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	{
 		ArgumentNullException.ThrowIfNull(settings);
 
-		var responseSet = await SendCommandAsync(
+		var responseSet = await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetChannel,
@@ -246,7 +208,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
-		var deviceReponseSet = await SendCommandAsync(device, cancellationToken, (byte)Command.GetVolume);
+		var deviceReponseSet = await _connection.SendCommandAsync(device, cancellationToken, (byte)Command.GetVolume);
 
 		var deviceResponse = deviceReponseSet.Responses.Single();
 
@@ -257,7 +219,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken)
 	{
-		var deviceReponseSet = await SendCommandAsync(device, cancellationToken, (byte)Command.GetMuteState);
+		var deviceReponseSet = await _connection.SendCommandAsync(device, cancellationToken, (byte)Command.GetMuteState);
 
 		var deviceResponse = deviceReponseSet.Responses[^1].Bytes[0];
 
@@ -277,7 +239,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			throw new ArgumentOutOfRangeException(nameof(brightnessPercent));
 		}
 
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetChannel,
@@ -302,7 +264,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		Channel channel,
 		CancellationToken cancellationToken)
 	{
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetChannel,
@@ -316,7 +278,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	{
 		_ = await SetBrightnessAsync(device, 100, cancellationToken);
 
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetChannel,
@@ -335,7 +297,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		VisualizationType visualizationType,
 		CancellationToken cancellationToken)
 	{
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetChannel,
@@ -371,7 +333,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		var redScoreUshort = (ushort)redScore;
 		var blueScoreUshort = (ushort)blueScore;
 
-		return await SendCommandAsync(
+		return await _connection.SendCommandAsync(
 			device,
 			cancellationToken,
 			(byte)Command.SetChannel,
@@ -414,7 +376,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 			commandBuilder.Add(imageByte);
 		}
 
-		return await SendCommandAsync(device, commandBuilder, cancellationToken);
+		return await _connection.SendCommandAsync(device, commandBuilder, cancellationToken);
 	}
 
 	public async Task<DeviceResponseSet> ViewAnimationAsync(
@@ -436,7 +398,7 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 
 			var commandBuilder = BuildAnimationFrameCommand(animationLength, packetIndex++, frameDataBytes);
 
-			_ = await SendCommandAsync(device, commandBuilder, cancellationToken);
+			_ = await _connection.SendCommandAsync(device, commandBuilder, cancellationToken);
 		}
 
 		// TODO
@@ -452,71 +414,13 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 	/// <param name="readDelay">The read delay</param>
 	/// <param name="cancellationToken">The CancellationToken</param>
 	/// <returns></returns>
-	public async Task<DeviceResponseSet> ReadResponseAsync(
-	DivoomBluetoothDevice device,
-	TimeSpan readDelay,
-	CancellationToken cancellationToken)
-	{
-		var stream = GetStream(device);
-
-		await Task.Delay(readDelay, cancellationToken);
-
-		var responses = new List<DeviceResponse>();
-		while (true)
-		{
-			var response = DeviceResponseReader.Read(stream);
-			if (response.IsEmpty)
-			{
-				break;
-			}
-
-			responses.Add(response);
-		}
-
-		return new DeviceResponseSet(responses);
-	}
+	public Task<DeviceResponseSet> ReadResponseAsync(
+		DivoomBluetoothDevice device,
+		TimeSpan readDelay,
+		CancellationToken cancellationToken)
+		=> _connection.ReadResponseAsync(device, readDelay, cancellationToken);
 
 	#region Private
-
-	/// <summary>
-	/// Adds all paired devices to the collection.
-	/// </summary>
-	private static Task AddPairedDevicesAsync(
-		BluetoothClient bluetoothClient,
-		List<BluetoothDeviceInfo> bluetoothDevices)
-	{
-		bluetoothDevices.AddRange(bluetoothClient.PairedDevices);
-
-		return Task.CompletedTask;
-	}
-
-	/// <summary>
-	/// Discovers nearby devices and adds them to the collection.
-	/// </summary>
-	private static async Task AddDiscoveredDevicesAsync(
-		BluetoothClient bluetoothClient,
-		List<BluetoothDeviceInfo> bluetoothDevices,
-		CancellationToken cancellationToken)
-	{
-		await foreach (var bluetoothDevice in bluetoothClient.DiscoverDevicesAsync(cancellationToken))
-		{
-			bluetoothDevices.Add(bluetoothDevice);
-		}
-	}
-
-	/// <summary>
-	/// Filters for Divoom/TimeBox devices (case-insensitive)
-	/// </summary>
-	private static List<DivoomBluetoothDevice> FilterDivoomDevices(IEnumerable<BluetoothDeviceInfo> bluetoothDevices)
-	{
-		return [.. bluetoothDevices
-			.Where(x => x.DeviceName != null && (
-				x.DeviceName.Contains("TimeBox", StringComparison.OrdinalIgnoreCase) ||
-				x.DeviceName.Contains("PIXOO", StringComparison.OrdinalIgnoreCase) ||
-				x.DeviceName.Contains("Divoom", StringComparison.OrdinalIgnoreCase)
-			))
-			.Select(x => new DivoomBluetoothDevice(x))];
-	}
 
 	/// <summary>
 	/// Builds the command for a single animation frame.
@@ -543,62 +447,6 @@ internal sealed class BluetoothManager(ILogger logger) : IBluetooth
 		}
 
 		return commandBuilder;
-	}
-
-	/// <summary>
-	/// Sends a command made up of a fixed sequence of bytes, in the order given.
-	/// </summary>
-	private Task<DeviceResponseSet> SendCommandAsync(
-		DivoomBluetoothDevice device,
-		CancellationToken cancellationToken,
-		params byte[] commandBytes)
-	{
-		var commandBuilder = new CommandBuilder();
-		foreach (var commandByte in commandBytes)
-		{
-			commandBuilder.Add(commandByte);
-		}
-
-		return SendCommandAsync(device, commandBuilder, cancellationToken);
-	}
-
-	private async Task<DeviceResponseSet> SendCommandAsync(
-		DivoomBluetoothDevice device,
-		CommandBuilder commandBuilder,
-		CancellationToken cancellationToken)
-	{
-		var stream = GetStream(device);
-		var bytes = commandBuilder.GetBytes();
-		stream.Write(bytes, 0, bytes.Length);
-
-		return await ReadResponseAsync(
-			device,
-			TimeSpan.FromMilliseconds(500),
-			cancellationToken);
-	}
-
-	private NetworkStream GetStream(DivoomBluetoothDevice device)
-	{
-		if (_bluetoothClients.TryGetValue(device.DeviceInfo.DeviceAddress, out var stream))
-		{
-			return stream;
-		}
-
-		// Verify device is reachable before connecting
-		if (!device.DeviceInfo.Connected)
-		{
-			throw new InvalidOperationException(
-				$"Device '{device.DeviceInfo.DeviceName}' is paired but not currently connected. " +
-				"Ensure the device is powered on and within range.");
-		}
-
-		// Connect to the device.
-		var bluetoothClient = new BluetoothClient();
-		bluetoothClient.Connect(new BluetoothEndPoint(device.DeviceInfo.DeviceAddress, BluetoothService.SerialPort, 1));
-		stream = bluetoothClient.GetStream();
-		_bluetoothClients.Add(device.DeviceInfo.DeviceAddress, stream);
-
-		return stream;
 	}
 
 	#endregion
