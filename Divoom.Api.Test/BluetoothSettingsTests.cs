@@ -19,6 +19,7 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 		{
 			var deviceResponse = await Client
 				.Bluetooth
+				.Settings
 				.SetBrightnessAsync(device, brightness, CancellationToken);
 
 			deviceResponse.IsOk.Should().BeTrue();
@@ -32,20 +33,24 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 
 		await Client
 			.Bluetooth
+			.Settings
 			.SetVolumeAsync(device, 7, CancellationToken);
 
 		var volumeRefetch = await Client
 			.Bluetooth
+			.Settings
 			.GetVolumeAsync(device, CancellationToken);
 
 		volumeRefetch.Should().Be(7);
 
 		await Client
 			.Bluetooth
+			.Settings
 			.SetVolumeAsync(device, 3, CancellationToken);
 
 		volumeRefetch = await Client
 			.Bluetooth
+			.Settings
 			.GetVolumeAsync(device, CancellationToken);
 
 		volumeRefetch.Should().Be(2);
@@ -65,10 +70,12 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 
 			await Client
 				.Bluetooth
+				.Settings
 				.SetVolumeAsync(device, volume, CancellationToken);
 
 			var volumeRefetch = await Client
 				.Bluetooth
+				.Settings
 				.GetVolumeAsync(device, CancellationToken);
 
 			if (volume == 16)
@@ -92,6 +99,7 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 		{
 			await Client
 				.Bluetooth
+				.Settings
 				.SetVolumeAsync(device, illegalVolume, CancellationToken);
 			throw new InvalidOperationException("Should have thrown an exception");
 		}
@@ -108,6 +116,7 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var volume = await Client
 			.Bluetooth
+			.Settings
 			.GetVolumeAsync(device, CancellationToken);
 
 		volume.Should().BeInRange(0, 16);
@@ -129,6 +138,7 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var muteState = await Client
 			.Bluetooth
+			.Settings
 			.GetMuteStateAsync(device, CancellationToken);
 		muteState.Should().BeOneOf(MuteState.Muted, MuteState.Unmuted);
 	}
@@ -140,6 +150,7 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 
 		await Client
 			.Bluetooth
+			.Settings
 			.SetMuteStateAsync(device,
 				MuteState.Muted,
 				CancellationToken);
@@ -152,12 +163,14 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 
 		await Client
 			.Bluetooth
+			.Settings
 			.SetTemperatureUnitAsync(device,
 				TemperatureUnit.Farenheit,
 				CancellationToken);
 
 		await Client
 			.Bluetooth
+			.Settings
 			.SetTemperatureUnitAsync(device,
 				TemperatureUnit.Celsius,
 				CancellationToken);
@@ -170,6 +183,7 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 
 		_ = await Client
 			.Bluetooth
+			.Settings
 			.GetSettingsAsync(device, CancellationToken);
 	}
 
@@ -179,6 +193,7 @@ public class BluetoothSettingsTests(ITestOutputHelper testOutputHelper, Bluetoot
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		await Client
 			.Bluetooth
+			.Settings
 			.SetDateTimeAsync(
 				device,
 				DateTime.UtcNow.AddHours(1),

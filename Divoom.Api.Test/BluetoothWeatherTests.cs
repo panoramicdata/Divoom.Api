@@ -17,6 +17,7 @@ public class BluetoothWeatherTests(ITestOutputHelper testOutputHelper, Bluetooth
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
+			.Settings
 			.GetWeatherAsync(device, CancellationToken);
 
 		deviceResponse.IsOk.Should().BeTrue();
@@ -28,6 +29,7 @@ public class BluetoothWeatherTests(ITestOutputHelper testOutputHelper, Bluetooth
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponseSet = await Client
 			.Bluetooth
+			.Settings
 			.SetWeatherAsync(
 				device,
 				30,
@@ -45,6 +47,7 @@ public class BluetoothWeatherTests(ITestOutputHelper testOutputHelper, Bluetooth
 
 		var deviceResponse = await Client
 			.Bluetooth
+			.Settings
 			.SetWeatherAsync(
 				device,
 				-1,
@@ -55,6 +58,7 @@ public class BluetoothWeatherTests(ITestOutputHelper testOutputHelper, Bluetooth
 
 		var deviceResponseSet = await Client
 			.Bluetooth
+			.View
 			.ViewClockAsync(
 				device,
 				new ClockViewSettings

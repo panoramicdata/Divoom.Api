@@ -32,6 +32,7 @@ public class BluetoothImageTests(ITestOutputHelper testOutputHelper, BluetoothFi
 
 		var deviceResponse = await Client
 			.Bluetooth
+			.Images
 			.ViewImageAsync(
 				device,
 				new DivoomImage(imageBytes),
@@ -50,6 +51,7 @@ public class BluetoothImageTests(ITestOutputHelper testOutputHelper, BluetoothFi
 
 		var deviceResponse = await Client
 			.Bluetooth
+			.Images
 			.ViewAnimationAsync(
 				device,
 				divoomAnimation,
@@ -150,6 +152,7 @@ public class BluetoothImageTests(ITestOutputHelper testOutputHelper, BluetoothFi
 
 		var deviceResponse = await Client
 			.Bluetooth
+			.Images
 			.ViewImageAsync(
 				device,
 				new DivoomImage(imageBytes),

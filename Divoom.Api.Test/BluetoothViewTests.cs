@@ -17,6 +17,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		_ = await Client
 			.Bluetooth
+			.View
 			.ViewClockAsync(
 				device,
 				new ClockViewSettings
@@ -35,6 +36,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
+			.View
 			.ViewClockAsync(
 				device,
 				new ClockViewSettings
@@ -58,6 +60,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
+			.View
 			.ViewClock2Async(
 				device,
 				new ClockViewSettings
@@ -81,6 +84,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 		{
 			var deviceResponseSet = await Client
 				.Bluetooth
+				.View
 				.ViewChannelAsync(
 					device,
 					channel,
@@ -93,6 +97,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 
 		var deviceResponseSet2 = await Client
 			.Bluetooth
+			.View
 			.ViewChannelAsync(
 				device,
 				Channel.Scoreboard,
@@ -107,6 +112,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
+			.View
 			.ViewLightingAsync(
 				device,
 				Color.Magenta,
@@ -124,7 +130,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		foreach (var visualizationType in Enum.GetValues<VisualizationType>())
 		{
-			var deviceResponse = await Client.Bluetooth.ViewVisualizationAsync(
+			var deviceResponse = await Client.Bluetooth.View.ViewVisualizationAsync(
 				device,
 				visualizationType,
 				CancellationToken);
@@ -141,6 +147,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 		var device = await GetFirstDeviceAsync(CancellationToken);
 		var deviceResponse = await Client
 			.Bluetooth
+			.View
 			.ViewStopwatchAsync(
 				device,
 				TimeSpan.FromMinutes(1),
@@ -160,6 +167,7 @@ public class BluetoothViewTests(ITestOutputHelper testOutputHelper, BluetoothFix
 			{
 				var deviceResponse = await Client
 					.Bluetooth
+					.View
 					.ViewScoreboardAsync(
 						device,
 						redScore,
