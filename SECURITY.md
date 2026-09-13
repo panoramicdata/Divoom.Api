@@ -8,9 +8,9 @@ Only the latest released version is supported with security updates.
 
 If you discover a security vulnerability, please report it responsibly.
 
-**Do NOT open a public GitHub issue.**
+**Please refrain from opening a public GitHub issue.**
 
-Instead, please email security@panoramicdata.com with:
+Instead, please contact our security team with:
 
 - A description of the vulnerability
 - Steps to reproduce the issue
@@ -24,6 +24,6 @@ We follow a coordinated disclosure process. We ask that you:
 
 1. Allow us reasonable time to investigate and address the issue
 2. Avoid exploiting the vulnerability beyond what is necessary to demonstrate it
-3. Do not disclose the issue publicly until we have released a fix
+3. Keep the issue confidential until we have released a fix
 
 Thank you for helping keep our software and users safe.
