@@ -12,7 +12,13 @@ namespace Divoom.Api.Test;
 /// <remarks>
 /// Every derived class carries <c>[Collection("Bluetooth")]</c> so that they all share
 /// one <see cref="BluetoothFixture"/>, and therefore one connection to the device.
+/// <para>
+/// These tests drive a physical Divoom device over Bluetooth, so they carry
+/// <c>[Trait("Category", "Integration")]</c> and CI excludes them with
+/// <c>--filter "Category!=Integration"</c>.
+/// </para>
 /// </remarks>
+[Trait("Category", "Integration")]
 public abstract class BluetoothTestBase : IAsyncLifetime
 {
 	private readonly BluetoothFixture _fixture;

@@ -38,6 +38,76 @@ jobs:
             ./artifacts/*.nupkg
             ./artifacts/*.snupkg
 
+  # Measures test coverage and publishes it to Codacy (OPS-157454).
+  # pdl-public, not a GitHub-hosted runner and not pdl-prod-cluster. This repository is public, so a
+  # fork pull request is untrusted code from a stranger: pdl-prod-cluster runs a privileged
+  # Docker-in-Docker sidecar with hostPath mounts on a production node and must never run it.
+  # pdl-public is the hardened scale set that may: no dind, no privileged container, no hostPath.
+  coverage:
+    runs-on: [pdl-public]
+    timeout-minutes: 30
+
+    # The actions-runner image our scale sets use does not offer the Node version several of these
+    # actions request by default; without this they fail before their first step runs.
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0 # Nerdbank.GitVersioning needs the history to compute a version.
+
+    # The runner user cannot write /usr/share/dotnet, so the SDK goes under the job's temp directory.
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      env:
+        DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Build tests
+      run: dotnet build Divoom.Api.Test/Divoom.Api.Test.csproj --configuration Debug
+
+    # The test project is a Microsoft.Testing.Platform application (UseMicrosoftTestingPlatformRunner),
+    # so coverage is collected by running it directly with Microsoft.Testing.Extensions.CodeCoverage
+    # rather than through `dotnet test`. On Linux the executable has no .exe extension. The runner
+    # image ships no pwsh, hence plain bash.
+    #
+    # CI runs only the tests that need no credentials or hardware. Classes deriving from Test call
+    # the live Divoom cloud API with device details from user secrets; classes deriving from
+    # BluetoothTestBase drive a physical device over Bluetooth. Both bases carry
+    # [Trait("Category", "Integration")] and are excluded here. xunit.runner.json sets failSkips:
+    # true, so leaving them in would turn this job red rather than skipping them.
+    - name: Run tests with coverage
+      run: >-
+        ./Divoom.Api.Test/bin/Debug/net10.0/Divoom.Api.Test
+        --coverage
+        --coverage-settings coverage.config
+        --coverage-output-format cobertura
+        --coverage-output coverage.cobertura.xml
+        --filter "Category!=Integration"
+
+    # continue-on-error: a Codacy outage must not turn a passing test run red. The trade-off is that
+    # an expired or missing project token fails silently, so check the log for
+    # "Coverage received successfully".
+    - name: Upload coverage to Codacy
+      continue-on-error: true
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: Divoom.Api.Test/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+
+    - name: Upload coverage artifact
+      if: always()
+      continue-on-error: true
+      uses: actions/upload-artifact@v7
+      with:
+        name: coverage
+        path: Divoom.Api.Test/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+        retention-days: 7
+
   publish:
     needs: build
     runs-on: ubuntu-latest
