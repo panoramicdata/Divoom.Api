@@ -8,9 +8,13 @@ Only the latest released version is supported with security updates.
 
 If you discover a security vulnerability, please report it responsibly.
 
-**Please refrain from opening a public GitHub issue.**
+**Do not open a public GitHub issue.**
 
-Instead, please contact our security team with:
+Instead, use GitHub's private vulnerability reporting: open this repository's **Security** tab
+and choose **Report a vulnerability**, or go straight to
+https://github.com/panoramicdata/Divoom.Api/security/advisories/new
+
+Please include:
 
 - A description of the vulnerability
 - Steps to reproduce the issue
@@ -24,6 +28,6 @@ We follow a coordinated disclosure process. We ask that you:
 
 1. Allow us reasonable time to investigate and address the issue
 2. Avoid exploiting the vulnerability beyond what is necessary to demonstrate it
-3. Keep the issue confidential until we have released a fix
+3. Do not disclose the issue publicly until we have released a fix
 
 Thank you for helping keep our software and users safe.
