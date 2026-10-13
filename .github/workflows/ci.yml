@@ -84,7 +84,7 @@ jobs:
       run: >-
         ./Divoom.Api.Test/bin/Debug/net10.0/Divoom.Api.Test
         --coverage
-        --coverage-settings coverage.config
+        --coverage-settings ${{ github.workspace }}/coverage.config
         --coverage-output-format cobertura
         --coverage-output coverage.cobertura.xml
         --filter "Category!=Integration"
