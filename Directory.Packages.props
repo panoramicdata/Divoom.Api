@@ -7,15 +7,15 @@
   <ItemGroup>
     <!-- Divoom.Api -->
     <PackageVersion Include="InTheHand.Net.Bluetooth" Version="4.2.5" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.13" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
     <PackageVersion Include="Refit" Version="16.3.0" />
     <PackageVersion Include="Tmds.DBus" Version="0.95.1" />
     <!-- Divoom.Api.Test -->
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <PackageVersion Include="AwesomeAssertions.Analyzers" Version="9.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.13" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="SkiaSharp" Version="4.153.1" />
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
