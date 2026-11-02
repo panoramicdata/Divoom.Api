@@ -41,6 +41,11 @@ public class DivoomClientOptions
 	public Action<Type, JsonException, string>? JsonMissingMemberAction { get; set; }
 
 	/// <summary>
+	/// When true, the client refuses every request that could change the device or account, before it is sent. Defaults to false.
+	/// </summary>
+	public bool IsReadOnly { get; set; }
+
+	/// <summary>
 	/// The HTTP client timeout in seconds
 	/// </summary>
 	public double HttpClientTimeoutSeconds { get; set; } = 30;

@@ -21,6 +21,11 @@ internal sealed class DivoomHttpClientHandler(
 		HttpRequestMessage request,
 		CancellationToken cancellationToken)
 	{
+		if (_options.IsReadOnly)
+		{
+			await ReadOnlyGuard.EnsureHttpRequestIsReadAsync(request, cancellationToken).ConfigureAwait(false);
+		}
+
 		var logPrefix = $"Request {Guid.NewGuid()}: ";
 
 		var attemptCount = 0;
