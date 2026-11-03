@@ -75,24 +75,24 @@ internal static class ReadOnlyGuard
 			return false;
 		}
 
-		// Local device commands are all POST /post; the verb is the last segment of the Command, e.g. "Channel/GetClockInfo".
 		var body = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+		return IsGetCommand(body);
+	}
+
+	// Local device commands are all POST /post; the verb is the last segment of the Command, e.g. "Channel/GetClockInfo".
+	private static bool IsGetCommand(string body)
+	{
 		try
 		{
 			using var document = JsonDocument.Parse(body);
-			if (document.RootElement.TryGetProperty("Command", out var command)
-				&& command.ValueKind == JsonValueKind.String)
-			{
-				var name = command.GetString() ?? string.Empty;
-				var verb = name[(name.LastIndexOf('/') + 1)..];
-				return verb.StartsWith("Get", StringComparison.Ordinal);
-			}
+			var name = document.RootElement.TryGetProperty("Command", out var command) && command.ValueKind == JsonValueKind.String
+				? command.GetString() ?? string.Empty
+				: string.Empty;
+			return name[(name.LastIndexOf('/') + 1)..].StartsWith("Get", StringComparison.Ordinal);
 		}
 		catch (JsonException)
 		{
 			return false;
 		}
-
-		return false;
 	}
 }
