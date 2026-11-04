@@ -55,7 +55,7 @@ public class DivoomClient : IDisposable
 
 		Channel = RestService.For<IChannel>(_localHttpClient, refitSettings);
 
-		Bluetooth = new BluetoothManager(logger);
+		Bluetooth = new BluetoothManager(options, logger);
 	}
 
 	/// <summary>

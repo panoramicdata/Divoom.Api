@@ -19,7 +19,7 @@ namespace Divoom.Api.Implementations;
 /// from <see cref="BluetoothManager"/>'s command vocabulary, which changes for entirely
 /// different reasons.
 /// </remarks>
-internal sealed class DeviceConnection
+internal sealed class DeviceConnection(DivoomClientOptions options)
 {
 	/// <summary>
 	/// How long a device is given to answer before its pending responses are read.
@@ -53,6 +53,8 @@ internal sealed class DeviceConnection
 		CommandBuilder commandBuilder,
 		CancellationToken cancellationToken)
 	{
+		ReadOnlyGuard.EnsureBluetoothCommandIsRead(options, commandBuilder);
+
 		var stream = GetStream(device);
 		var bytes = commandBuilder.GetBytes();
 		stream.Write(bytes, 0, bytes.Length);

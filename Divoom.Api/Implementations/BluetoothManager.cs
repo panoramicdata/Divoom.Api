@@ -19,11 +19,12 @@ namespace Divoom.Api.Implementations;
 internal sealed class BluetoothManager : IBluetooth
 {
 	private readonly ILogger _logger;
-	private readonly DeviceConnection _connection = new();
+	private readonly DeviceConnection _connection;
 
-	public BluetoothManager(ILogger logger)
+	public BluetoothManager(DivoomClientOptions options, ILogger logger)
 	{
 		_logger = logger;
+		_connection = new DeviceConnection(options);
 		Settings = new BluetoothSettingsCommands(_connection);
 		View = new BluetoothViewCommands(_connection, Settings);
 		Images = new BluetoothImageCommands(_connection);

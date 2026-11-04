@@ -9,6 +9,9 @@ internal sealed class CommandBuilder
 	uint _checksum;
 	uint _count;
 
+	/// <summary>The first payload byte, which identifies the command.</summary>
+	public byte? CommandByte => _bytes.Count > 0 ? _bytes[0] : null;
+
 	public byte[] GetBytes()
 	{
 		var checksum = _checksum;
