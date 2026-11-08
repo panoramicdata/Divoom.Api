@@ -45,10 +45,10 @@ public class SendHttpTextRequest : ICommand
 	public int Font { get; set; } = 4;
 
 	/// <summary>
-	/// The text box width in pixels; 56 is verified on a Pixoo 64, where text sent at 64 did not appear
+	/// The text box width in pixels; scrolling text stops short of the right edge unless this is the panel width
 	/// </summary>
 	[JsonPropertyName("TextWidth")]
-	public int TextWidth { get; set; } = 56;
+	public int TextWidth { get; set; } = 64;
 
 	/// <summary>
 	/// Milliseconds per scroll step

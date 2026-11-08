@@ -19,7 +19,8 @@ public class DivoomClient : IDisposable
 
 	private readonly DivoomHttpClientHandler _httpClientHandler;
 	private readonly HttpClient _httpClient;
-	private readonly HttpClient _localHttpClient;
+	private readonly Lazy<IChannel> _channel;
+	private HttpClient? _localHttpClient;
 	private bool _disposedValue;
 
 	/// <summary>
@@ -47,15 +48,23 @@ public class DivoomClient : IDisposable
 			Timeout = TimeSpan.FromSeconds(options.HttpClientTimeoutSeconds)
 		};
 
-		_localHttpClient = new HttpClient(_httpClientHandler)
-		{
-			BaseAddress = new Uri($"http://{options.DeviceIp}"),
-			Timeout = TimeSpan.FromSeconds(options.HttpClientTimeoutSeconds)
-		};
-
 		Gz = RestService.For<IGz>(_httpClient, refitSettings);
 
-		Channel = RestService.For<IChannel>(_localHttpClient, refitSettings);
+		// Lazy so that a client with no DeviceIp can still discover devices through Gz
+		_channel = new Lazy<IChannel>(() =>
+		{
+			if (string.IsNullOrWhiteSpace(options.DeviceIp))
+			{
+				throw new InvalidOperationException($"Set {nameof(DivoomClientOptions.DeviceIp)} to use the local device API.");
+			}
+
+			_localHttpClient = new HttpClient(_httpClientHandler, disposeHandler: false)
+			{
+				BaseAddress = new Uri($"http://{options.DeviceIp}"),
+				Timeout = TimeSpan.FromSeconds(options.HttpClientTimeoutSeconds)
+			};
+			return RestService.For<IChannel>(_localHttpClient, refitSettings);
+		});
 
 		Bluetooth = new BluetoothManager(options, logger);
 	}
@@ -66,9 +75,9 @@ public class DivoomClient : IDisposable
 	public IGz Gz { get; }
 
 	/// <summary>
-	/// The Channel API interface
+	/// The local device API, which needs <see cref="DivoomClientOptions.DeviceIp"/>
 	/// </summary>
-	public IChannel Channel { get; }
+	public IChannel Channel => _channel.Value;
 
 	/// <summary>
 	/// The Bluetooth interface
@@ -82,7 +91,7 @@ public class DivoomClient : IDisposable
 		{
 			if (disposing)
 			{
-				_localHttpClient.Dispose();
+				_localHttpClient?.Dispose();
 				_httpClient.Dispose();
 				_httpClientHandler.Dispose();
 			}

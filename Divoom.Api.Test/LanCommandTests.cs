@@ -54,6 +54,30 @@ public sealed class LanCommandTests : IDisposable
 	}
 
 	[Fact]
+	public void Client_WithoutDeviceIp_CanBeCreated_ButChannelExplains()
+	{
+		using var client = new DivoomClient(new DivoomClientOptions(), NullLogger.Instance);
+
+		client.Gz.Should().NotBeNull();
+		var act = () => client.Channel;
+		act.Should().Throw<InvalidOperationException>().WithMessage("*DeviceIp*");
+	}
+
+	[Fact]
+	public void LanDevice_ParsesCapturedDiscoveryResponse()
+	{
+		// Captured from https://app.divoom-gz.com/Device/ReturnSameLANDevice on 2026-11-08
+		const string captured = "{\"ReturnCode\":0,\"ReturnMessage\":\"\",\"DeviceList\":[{\"DeviceName\":\"Office\",\"DeviceId\":300030325,\"DevicePrivateIP\":\"192.168.1.131\",\"DeviceMac\":\"94e6860c4370\",\"Hardware\":90}]}";
+
+		var response = JsonSerializer.Deserialize<GetLanDevicesResponse>(captured)!;
+
+		var device = response.Devices.Should().ContainSingle().Subject;
+		device.Name.Should().Be("Office");
+		device.PrivateIp.Should().Be("192.168.1.131");
+		device.Hardware.Should().Be(90);
+	}
+
+	[Fact]
 	public async Task GetDeviceTimeAsync_ParsesResponse()
 	{
 		_device.Respond = _ => "{\"error_code\":0,\"UTCTime\":1794151499,\"LocalTime\":\"2026-11-08 15:24:59\"}";
@@ -126,12 +150,12 @@ public sealed class LanCommandTests : IDisposable
 		pixels.Should().HaveCount(64 * 64 * 3);
 		pixels.Take(3).Should().Equal(0xFF, 0x00, 0x00);
 
-		// Geometry that rendered on the Pixoo 64
+		// Geometry confirmed on a Pixoo 64: a narrower box left the scroll short of the right edge
 		var text = bodies[2];
 		text.GetProperty("TextString").GetString().Should().Be("BUSY");
 		text.GetProperty("color").GetString().Should().Be("#FFFF00");
 		text.GetProperty("y").GetInt32().Should().Be(24);
-		text.GetProperty("TextWidth").GetInt32().Should().Be(56);
+		text.GetProperty("TextWidth").GetInt32().Should().Be(64);
 	}
 
 	[Fact]

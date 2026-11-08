@@ -45,7 +45,7 @@ public static class ChannelExtensions
 				Text = text,
 				Color = textColor,
 				Y = (width / 2) - 8,
-				TextWidth = width - 8
+				TextWidth = width
 			}, cancellationToken)
 			.ConfigureAwait(false));
 	}

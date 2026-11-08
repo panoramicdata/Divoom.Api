@@ -22,7 +22,7 @@ public class Device
 	/// <summary>
 	/// The device IP
 	/// </summary>
-	[JsonPropertyName("DevicePrivateIp")]
+	[JsonPropertyName("DevicePrivateIP")]
 	public string PrivateIp { get; set; } = string.Empty;
 
 	/// <summary>
@@ -30,4 +30,10 @@ public class Device
 	/// </summary>
 	[JsonPropertyName("DeviceMac")]
 	public string Mac { get; set; } = string.Empty;
+
+	/// <summary>
+	/// The hardware type code
+	/// </summary>
+	[JsonPropertyName("Hardware")]
+	public int Hardware { get; set; }
 }
