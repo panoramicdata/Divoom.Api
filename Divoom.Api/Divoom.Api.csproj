@@ -28,6 +28,9 @@
     <None Include="../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Divoom.Api.Test" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="InTheHand.Net.Bluetooth" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Nerdbank.GitVersioning">

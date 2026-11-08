@@ -26,6 +26,11 @@ public sealed class FakeDevice : IDisposable
 	/// </summary>
 	public Func<string, string> Respond { get; set; } = _ => "{\"error_code\":0,\"ClockId\":1,\"Brightness\":42}";
 
+	/// <summary>
+	/// Returns the status code and any extra header lines for the zero-based request index; the default is 200.
+	/// </summary>
+	public Func<int, (int StatusCode, string Headers)> Status { get; set; } = _ => (200, string.Empty);
+
 	public IReadOnlyList<string> Requests
 	{
 		get
@@ -82,8 +87,10 @@ public sealed class FakeDevice : IDisposable
 		}
 
 		var request = received.ToString();
+		int requestIndex;
 		lock (_requests)
 		{
+			requestIndex = _requests.Count;
 			_requests.Add(request);
 		}
 
@@ -91,7 +98,8 @@ public sealed class FakeDevice : IDisposable
 		var body = IsChunked(request)
 			? "{\"error_code\": \"Request data illegal json\"}"
 			: Respond(BodyOf(request));
-		var response = $"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {Encoding.UTF8.GetByteCount(body)}\r\nConnection: close\r\n\r\n{body}";
+		var (statusCode, headers) = Status(requestIndex);
+		var response = $"HTTP/1.1 {statusCode} Status\r\nContent-Type: application/json\r\n{headers}Content-Length: {Encoding.UTF8.GetByteCount(body)}\r\nConnection: close\r\n\r\n{body}";
 		await stream.WriteAsync(Encoding.UTF8.GetBytes(response), _stop.Token);
 	}
 
