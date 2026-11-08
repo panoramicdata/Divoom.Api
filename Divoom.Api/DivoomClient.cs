@@ -33,7 +33,9 @@ public class DivoomClient : IDisposable
 
 		var refitSettings = new RefitSettings
 		{
-			ContentSerializer = new CustomJsonContentSerializer(Options, logger)
+			ContentSerializer = new CustomJsonContentSerializer(Options, logger),
+			// Devices answer a chunked body with "Request data illegal json"
+			Buffered = true
 		};
 
 		_httpClientHandler = new DivoomHttpClientHandler(options
