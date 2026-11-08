@@ -13,6 +13,18 @@ We only have access to the following devices at present, so these are the only o
 * PIXOO64
 * Timebox Evo (16x16)
 
+## Local network (Pixoo 64)
+
+```csharp
+using var client = new DivoomClient(new DivoomClientOptions { DeviceIp = "192.0.2.10" }, logger);
+var config = await client.Channel.GetAllConfigAsync(new(), cancellationToken);
+await client.Channel.SetBrightnessAsync(new SetBrightnessRequest { Brightness = 80 }, cancellationToken);
+await client.Channel.ShowTextAsync("BUSY", "#B40000", "#FFFFFF", 64, cancellationToken);
+```
+
+Find a device's IP with `client.Gz.GetLanDevicesAsync(cancellationToken)`.
+A device that rejects a command still answers HTTP 200, so check `error_code` with `ChannelExtensions.EnsureSuccess(response)`.
+
 Gratefully received:
 * Documentation
 * Devices (ship to Panoramic House, 46 Heywood Avenue, SL6 3JA, UK)
