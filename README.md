@@ -16,7 +16,7 @@ We only have access to the following devices at present, so these are the only o
 ## Local network (Pixoo 64)
 
 ```csharp
-using var client = new DivoomClient(new DivoomClientOptions { DeviceIp = "192.168.1.131" }, logger);
+using var client = new DivoomClient(new DivoomClientOptions { DeviceIp = "192.0.2.10" }, logger);
 var config = await client.Channel.GetAllConfigAsync(new(), cancellationToken);
 await client.Channel.SetBrightnessAsync(new SetBrightnessRequest { Brightness = 80 }, cancellationToken);
 await client.Channel.ShowTextAsync("BUSY", "#B40000", "#FFFFFF", 64, cancellationToken);

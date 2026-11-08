@@ -67,13 +67,13 @@ public sealed class LanCommandTests : IDisposable
 	public void LanDevice_ParsesCapturedDiscoveryResponse()
 	{
 		// Captured from https://app.divoom-gz.com/Device/ReturnSameLANDevice on 2026-11-08
-		const string captured = "{\"ReturnCode\":0,\"ReturnMessage\":\"\",\"DeviceList\":[{\"DeviceName\":\"Office\",\"DeviceId\":300030325,\"DevicePrivateIP\":\"192.168.1.131\",\"DeviceMac\":\"94e6860c4370\",\"Hardware\":90}]}";
+		const string captured = "{\"ReturnCode\":0,\"ReturnMessage\":\"\",\"DeviceList\":[{\"DeviceName\":\"Desk\",\"DeviceId\":300000001,\"DevicePrivateIP\":\"192.0.2.10\",\"DeviceMac\":\"0200000000aa\",\"Hardware\":90}]}";
 
 		var response = JsonSerializer.Deserialize<GetLanDevicesResponse>(captured)!;
 
 		var device = response.Devices.Should().ContainSingle().Subject;
-		device.Name.Should().Be("Office");
-		device.PrivateIp.Should().Be("192.168.1.131");
+		device.Name.Should().Be("Desk");
+		device.PrivateIp.Should().Be("192.0.2.10");
 		device.Hardware.Should().Be(90);
 	}
 

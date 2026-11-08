@@ -52,12 +52,20 @@ public class SendHttpGifRequest : ICommand
 	public string PicData { get; set; } = string.Empty;
 
 	/// <summary>
+	/// Creates a single-frame 64 x 64 animation filled with one colour.
+	/// </summary>
+	/// <param name="picId">The animation id.</param>
+	/// <param name="hexColor">The colour, as #RRGGBB.</param>
+	public static SendHttpGifRequest SolidColor(int picId, string hexColor)
+		=> SolidColor(picId, hexColor, 64);
+
+	/// <summary>
 	/// Creates a single-frame animation filled with one colour.
 	/// </summary>
 	/// <param name="picId">The animation id.</param>
 	/// <param name="hexColor">The colour, as #RRGGBB.</param>
 	/// <param name="width">The width in pixels.</param>
-	public static SendHttpGifRequest SolidColor(int picId, string hexColor, int width = 64)
+	public static SendHttpGifRequest SolidColor(int picId, string hexColor, int width)
 	{
 		var (red, green, blue) = ParseHexColor(hexColor);
 		var pixels = new byte[width * width * 3];
