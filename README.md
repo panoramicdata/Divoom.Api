@@ -12,6 +12,18 @@ It is based on the [Divoom Timebox API](http://doc.divoom-gz.com/web/#/12?page_i
 We only have access to the following devices at present, so these are the only onces we can develop against:
 * PIXOO64
 * Timebox Evo (16x16)
+* Pixoo Max (32x32)
+
+## Bluetooth (Timebox Evo, Pixoo Max)
+
+```csharp
+using var client = new DivoomClient(new DivoomClientOptions(), logger);
+var device = (await client.Bluetooth.GetDevicesAsync(cancellationToken)).First(d => d.DeviceInfo.DeviceName.Contains("Pixoo"));
+await client.Bluetooth.View.ViewLightingAsync(device, Color.Red, 100, LightingPattern.Custom, PowerState.On, cancellationToken);
+await client.Bluetooth.Images.ViewImageAsync(device, new DivoomImage(pixels), cancellationToken); // 256 pixels (16x16) or 1024 (32x32)
+```
+
+The device must be paired with Windows as a **classic** Bluetooth device. Windows' *Add device* may pair a Pixoo Max as Bluetooth LE only, which this library cannot use; pair it from code with `BluetoothDevice.FromBluetoothAddressAsync` and `DeviceInformation.Pairing.Custom.PairAsync` instead. A phone running the Divoom app holds the device's only connection.
 
 ## Local network (Pixoo 64)
 
