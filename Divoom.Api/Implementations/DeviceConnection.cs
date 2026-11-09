@@ -26,6 +26,8 @@ internal sealed class DeviceConnection(DivoomClientOptions options)
 	/// </summary>
 	private static readonly TimeSpan DefaultReadDelay = TimeSpan.FromMilliseconds(500);
 
+	private static readonly TimeSpan ConnectSettleDelay = TimeSpan.FromMilliseconds(500);
+
 	private readonly Dictionary<ulong, NetworkStream> _streams = [];
 
 	/// <summary>
@@ -102,19 +104,26 @@ internal sealed class DeviceConnection(DivoomClientOptions options)
 			return stream;
 		}
 
-		// Verify device is reachable before connecting
-		if (!device.DeviceInfo.Connected)
+		// Windows reports a display-only device (Pixoo Max) as connected only once a link is open, so try anyway.
+		var bluetoothClient = new BluetoothClient();
+		try
 		{
+			bluetoothClient.Connect(new BluetoothEndPoint(device.DeviceInfo.DeviceAddress, BluetoothService.SerialPort, 1));
+		}
+		catch (SocketException ex)
+		{
+			bluetoothClient.Dispose();
 			throw new InvalidOperationException(
-				$"Device '{device.DeviceInfo.DeviceName}' is paired but not currently connected. " +
-				"Ensure the device is powered on and within range.");
+				$"Could not connect to '{device.DeviceInfo.DeviceName}': {ex.Message} " +
+				"Ensure it is powered on, in range, paired as a classic Bluetooth device, and not connected to a phone.",
+				ex);
 		}
 
-		// Connect to the device.
-		var bluetoothClient = new BluetoothClient();
-		bluetoothClient.Connect(new BluetoothEndPoint(device.DeviceInfo.DeviceAddress, BluetoothService.SerialPort, 1));
 		stream = bluetoothClient.GetStream();
 		_streams.Add(device.DeviceInfo.DeviceAddress, stream);
+
+		// A Pixoo Max silently drops a command written straight after connecting.
+		Thread.Sleep(ConnectSettleDelay);
 
 		return stream;
 	}

@@ -11,6 +11,12 @@ public class DivoomImage
 {
 	private readonly List<Color> _palette = [];
 	private readonly List<byte> _encodedImage = [];
+	private readonly bool _isLarge;
+
+	/// <summary>
+	/// The pixel count of a 32x32 image, such as a Pixoo Max's, which uses a wider frame format.
+	/// </summary>
+	public static int LargeImagePixelCount => 32 * 32;
 
 	/// <summary>
 	/// The frame time in milliseconds
@@ -34,7 +40,17 @@ public class DivoomImage
 	{
 		// See https://github.com/RomRider/node-divoom-timebox-evo/blob/master/PROTOCOL.md#animations-images-and-text
 
-		BuildPalette(image);
+		FrameTimeMs = (int)(frameTime?.TotalMilliseconds ?? 0);
+
+		if (image.Length == LargeImagePixelCount)
+		{
+			_isLarge = true;
+			BuildPalette(image, padTo256: false);
+			EncodeLeastSignificantFirst(image, Math.Max(1, (int)Math.Ceiling(Math.Log(_palette.Count, 2))));
+			return;
+		}
+
+		BuildPalette(image, padTo256: true);
 
 		var bitsPerPixel = (int)Math.Ceiling(Math.Log(_palette.Count, 2));
 
@@ -49,11 +65,31 @@ public class DivoomImage
 		{
 			EncodePacked(image, bitsPerPixel);
 		}
-
-		FrameTimeMs = (int)(frameTime?.TotalMilliseconds ?? 0);
 	}
 
-	private void BuildPalette(Color[] image)
+	private void EncodeLeastSignificantFirst(Color[] image, int bitsPerPixel)
+	{
+		var accumulator = 0;
+		var bitCount = 0;
+		foreach (var pixel in image)
+		{
+			accumulator |= _palette.IndexOf(pixel) << bitCount;
+			bitCount += bitsPerPixel;
+			while (bitCount >= 8)
+			{
+				_encodedImage.Add((byte)(accumulator & 0xff));
+				accumulator >>= 8;
+				bitCount -= 8;
+			}
+		}
+
+		if (bitCount > 0)
+		{
+			_encodedImage.Add((byte)(accumulator & 0xff));
+		}
+	}
+
+	private void BuildPalette(Color[] image, bool padTo256)
 	{
 		foreach (var pixel in image)
 		{
@@ -69,7 +105,7 @@ public class DivoomImage
 
 		// Hack (inefficiency)
 		// Pad the palette with black to ensure 8 bits per pixel.
-		while (_palette.Count < 256)
+		while (padTo256 && _palette.Count < 256)
 		{
 			_palette.Add(Color.Black);
 		}
@@ -117,6 +153,11 @@ public class DivoomImage
 
 	internal List<byte> GetImageBytes()
 	{
+		if (_isLarge)
+		{
+			return GetLargeImageBytes();
+		}
+
 		var imageLength = 7 + ImageSize;
 
 		var imageBytes = new List<byte>
@@ -156,6 +197,34 @@ public class DivoomImage
 			imageBytes.Add(pixel);
 		}
 
+		return imageBytes;
+	}
+
+	// Pixoo Max: AA LLLL TTTT 03 NNNN COLOR_DATA PIXEL_DATA, as hass-divoom's pixoomax encoding.
+	private List<byte> GetLargeImageBytes()
+	{
+		var imageLength = 8 + ImageSize;
+
+		List<byte> imageBytes =
+		[
+			0xaa,
+			(byte)(imageLength & 0xff),
+			(byte)(imageLength >> 8 & 0xff),
+			(byte)(FrameTimeMs & 0xff),
+			(byte)(FrameTimeMs >> 8 & 0xff),
+			0x03,
+			(byte)(_palette.Count & 0xff),
+			(byte)(_palette.Count >> 8 & 0xff),
+		];
+
+		foreach (var color in _palette)
+		{
+			imageBytes.Add(color.R);
+			imageBytes.Add(color.G);
+			imageBytes.Add(color.B);
+		}
+
+		imageBytes.AddRange(_encodedImage);
 		return imageBytes;
 	}
 }
