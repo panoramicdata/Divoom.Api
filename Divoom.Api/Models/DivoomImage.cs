@@ -16,7 +16,7 @@ public class DivoomImage
 	/// <summary>
 	/// The pixel count of a 32x32 image, such as a Pixoo Max's, which uses a wider frame format.
 	/// </summary>
-	public const int LargeImagePixelCount = 32 * 32;
+	public static int LargeImagePixelCount => 32 * 32;
 
 	/// <summary>
 	/// The frame time in milliseconds
