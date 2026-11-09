@@ -12,23 +12,39 @@ public sealed class HttpClientHandlerTests : IDisposable
 
 	private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
-	private DivoomClient CreateClient(int maxAttemptCount) => new(
+	private DivoomClient CreateClient(int maxAttemptCount, RecordingLogger? logger = null) => new(
 		new DivoomClientOptions
 		{
 			DeviceIp = $"127.0.0.1:{_device.Port}",
 			HttpMaxAttemptCount = maxAttemptCount
 		},
-		_logger);
+		logger ?? _logger);
+
+	private async Task<int> CallAsync(int maxAttemptCount, RecordingLogger? logger = null)
+	{
+		using var client = CreateClient(maxAttemptCount, logger);
+		var response = await client.Channel.GetDialInfoAsync(new(), CancellationToken);
+		return response.Brightness;
+	}
+
+	private async Task CallFailingOnceAsync(int status, int maxAttemptCount, HttpStatusCode expected)
+	{
+		_device.Status = _ => (status, status == 429 ? "Retry-After: 0\r\n" : string.Empty);
+		using var client = CreateClient(maxAttemptCount);
+
+		var act = () => client.Channel.GetDialInfoAsync(new(), CancellationToken);
+
+		(await act.Should().ThrowAsync<ApiException>()).Which.StatusCode.Should().Be(expected);
+		_device.Requests.Should().ContainSingle();
+	}
 
 	[Fact]
 	public async Task TooManyRequests_ThenSuccess_IsRetriedAfterRetryAfter()
 	{
 		_device.Status = index => index == 0 ? (429, "Retry-After: 0\r\n") : (200, string.Empty);
-		using var client = CreateClient(maxAttemptCount: 2);
 
-		var response = await client.Channel.GetDialInfoAsync(new(), CancellationToken);
+		(await CallAsync(maxAttemptCount: 2)).Should().Be(42);
 
-		response.Brightness.Should().Be(42);
 		_device.Requests.Should().HaveCount(2);
 		_logger.MessagesAt(LogLevel.Information).Should().ContainSingle()
 			.Which.Should().Contain("Received 429 on attempt 1/2").And.Contain("Waiting 0.00s");
@@ -42,9 +58,8 @@ public sealed class HttpClientHandlerTests : IDisposable
 	public async Task TooManyRequests_WithoutUsableRetryAfter_WaitsOnePointOneSeconds(string headers)
 	{
 		_device.Status = index => index == 0 ? (429, headers) : (200, string.Empty);
-		using var client = CreateClient(maxAttemptCount: 2);
 
-		await client.Channel.GetDialInfoAsync(new(), CancellationToken);
+		await CallAsync(maxAttemptCount: 2);
 
 		_device.Requests.Should().HaveCount(2);
 		_logger.MessagesAt(LogLevel.Information).Should().ContainSingle().Which.Should().Contain("Waiting 1.10s");
@@ -53,13 +68,8 @@ public sealed class HttpClientHandlerTests : IDisposable
 	[Fact]
 	public async Task TooManyRequests_OnLastAttempt_GivesUpAndReturnsTheStatus()
 	{
-		_device.Status = _ => (429, "Retry-After: 0\r\n");
-		using var client = CreateClient(maxAttemptCount: 1);
+		await CallFailingOnceAsync(429, maxAttemptCount: 1, HttpStatusCode.TooManyRequests);
 
-		var act = () => client.Channel.GetDialInfoAsync(new(), CancellationToken);
-
-		(await act.Should().ThrowAsync<ApiException>()).Which.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-		_device.Requests.Should().ContainSingle();
 		_logger.MessagesAt(LogLevel.Information).Should().ContainSingle()
 			.Which.Should().Contain("Giving up retrying.  Returning 429 on attempt 1/1.");
 	}
@@ -67,13 +77,8 @@ public sealed class HttpClientHandlerTests : IDisposable
 	[Fact]
 	public async Task BadGateway_OnLastAttempt_GivesUpWithoutWaiting()
 	{
-		_device.Status = _ => (502, string.Empty);
-		using var client = CreateClient(maxAttemptCount: 1);
+		await CallFailingOnceAsync(502, maxAttemptCount: 1, HttpStatusCode.BadGateway);
 
-		var act = () => client.Channel.GetDialInfoAsync(new(), CancellationToken);
-
-		(await act.Should().ThrowAsync<ApiException>()).Which.StatusCode.Should().Be(HttpStatusCode.BadGateway);
-		_device.Requests.Should().ContainSingle();
 		_logger.MessagesAt(LogLevel.Information).Should().HaveCount(2)
 			.And.Contain(m => m.Contains("Received 502 on attempt 1/1.", StringComparison.Ordinal))
 			.And.Contain(m => m.Contains("Giving up retrying.  Returning 502 on attempt 1/1.", StringComparison.Ordinal));
@@ -82,13 +87,8 @@ public sealed class HttpClientHandlerTests : IDisposable
 	[Fact]
 	public async Task InternalServerError_IsLoggedAsAnErrorAndNotRetried()
 	{
-		_device.Status = _ => (500, string.Empty);
-		using var client = CreateClient(maxAttemptCount: 3);
+		await CallFailingOnceAsync(500, maxAttemptCount: 3, HttpStatusCode.InternalServerError);
 
-		var act = () => client.Channel.GetDialInfoAsync(new(), CancellationToken);
-
-		(await act.Should().ThrowAsync<ApiException>()).Which.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-		_device.Requests.Should().ContainSingle();
 		_logger.MessagesAt(LogLevel.Error).Should().ContainSingle()
 			.Which.Should().Contain("Received remote error code 500 on attempt 1/3").And.Contain("POST");
 	}
@@ -96,9 +96,7 @@ public sealed class HttpClientHandlerTests : IDisposable
 	[Fact]
 	public async Task TraceLogging_RecordsRequestAndResponseContent()
 	{
-		using var client = CreateClient(maxAttemptCount: 1);
-
-		await client.Channel.GetDialInfoAsync(new(), CancellationToken);
+		await CallAsync(maxAttemptCount: 1);
 
 		var trace = _logger.MessagesAt(LogLevel.Trace).ToList();
 		trace.Should().Contain(m => m.Contains("RequestContent", StringComparison.Ordinal) && m.Contains("Channel/GetClockInfo", StringComparison.Ordinal));
@@ -109,11 +107,8 @@ public sealed class HttpClientHandlerTests : IDisposable
 	public async Task LoggingBelowTrace_RecordsNoContent()
 	{
 		var logger = new RecordingLogger(LogLevel.Debug);
-		using var client = new DivoomClient(
-			new DivoomClientOptions { DeviceIp = $"127.0.0.1:{_device.Port}", HttpMaxAttemptCount = 1 },
-			logger);
 
-		await client.Channel.GetDialInfoAsync(new(), CancellationToken);
+		await CallAsync(maxAttemptCount: 1, logger);
 
 		logger.Entries.Should().BeEmpty();
 	}
