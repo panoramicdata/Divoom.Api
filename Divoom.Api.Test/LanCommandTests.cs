@@ -25,7 +25,7 @@ public sealed class LanCommandTests : IDisposable
 		NullLogger.Instance);
 
 	private JsonElement SingleBody()
-		=> JsonDocument.Parse(_device.Bodies.Should().ContainSingle().Subject).RootElement;
+		=> JsonElement.Parse(_device.Bodies.Should().ContainSingle().Subject);
 
 	[Fact]
 	public async Task GetAllConfigAsync_ParsesCapturedResponse()
@@ -139,7 +139,7 @@ public sealed class LanCommandTests : IDisposable
 
 		await client.Channel.ShowTextAsync("BUSY", "#FF0000", "#FFFF00", 64, CancellationToken);
 
-		var bodies = _device.Bodies.Select(b => JsonDocument.Parse(b).RootElement).ToList();
+		var bodies = _device.Bodies.Select(b => JsonElement.Parse(b)).ToList();
 		bodies.Select(b => b.GetProperty("Command").GetString())
 			.Should().Equal("Draw/GetHttpGifId", "Draw/SendHttpGif", "Draw/SendHttpText");
 
