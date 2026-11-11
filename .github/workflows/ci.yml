@@ -82,7 +82,7 @@ jobs:
     # true, so leaving them in would turn this job red rather than skipping them.
     - name: Run tests with coverage
       run: >-
-        ./Divoom.Api.Test/bin/Debug/net10.0/Divoom.Api.Test
+        ./Divoom.Api.Test/bin/Debug/net11.0/Divoom.Api.Test
         --coverage
         --coverage-settings ${{ github.workspace }}/coverage.config
         --coverage-output-format cobertura
@@ -97,7 +97,7 @@ jobs:
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: Divoom.Api.Test/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+        coverage-reports: Divoom.Api.Test/bin/Debug/net11.0/TestResults/coverage.cobertura.xml
 
     - name: Upload coverage artifact
       if: always()
@@ -105,7 +105,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: coverage
-        path: Divoom.Api.Test/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+        path: Divoom.Api.Test/bin/Debug/net11.0/TestResults/coverage.cobertura.xml
         retention-days: 7
 
   publish:
