@@ -7,6 +7,8 @@
 
 This is a .NET library for controlling Divoom Timebox devices.
 
+Supports .NET 11.0.
+
 It is based on the [Divoom Timebox API](http://doc.divoom-gz.com/web/#/12?page_id=189).
 
 We only have access to the following devices at present, so these are the only onces we can develop against:
