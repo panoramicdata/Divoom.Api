@@ -9,7 +9,8 @@
     <PackageVersion Include="InTheHand.Net.Bluetooth" Version="4.2.5" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0" />
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
-    <PackageVersion Include="Refit" Version="16.4.0" />
+    <PackageVersion Include="Refit" Version="17.0.0" />
+    <PackageVersion Include="Refit.Reflection" Version="17.0.0" />
     <PackageVersion Include="Tmds.DBus" Version="0.95.2" />
     <!-- Divoom.Api.Test -->
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
