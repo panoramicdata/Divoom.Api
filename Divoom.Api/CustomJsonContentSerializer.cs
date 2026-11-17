@@ -14,7 +14,7 @@ namespace Divoom.Api;
 /// A custom IHttpContentSerializer based on SystemTextJsonContentSerializer
 /// to handle retries after missing members are observed
 /// </summary>
-public class CustomJsonContentSerializer : IHttpContentSerializer
+public class CustomJsonContentSerializer : IHttpContentSerializer, IReflectionFieldNameProvider
 {
 	private readonly DivoomClientOptions _options;
 	private readonly ILogger _logger;
@@ -125,7 +125,7 @@ public class CustomJsonContentSerializer : IHttpContentSerializer
 
 	/// <inheritdoc />
 	public string? GetFieldNameForProperty(PropertyInfo propertyInfo)
-		=> _serializerIgnore.GetFieldNameForProperty(propertyInfo);
+		=> propertyInfo.GetCustomAttribute<System.Text.Json.Serialization.JsonPropertyNameAttribute>()?.Name;
 
 	/// <inheritdoc />
 	public HttpContent ToHttpContent<T>(T item)
