@@ -31,6 +31,7 @@ public class CustomJsonContentSerializer : IHttpContentSerializer, IReflectionFi
 	{
 		_options = options;
 		_logger = logger;
+		ReflectionSupport.EnsureRegistered();
 		_jsonSerializerOptionsWithIgnore = new JsonSerializerOptions
 		{
 			// By default nulls should not be rendered out, this will allow the receiving API to apply any defaults.
