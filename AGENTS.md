@@ -1,24 +1,24 @@
 # Agent instructions
 
-Version: 1.1
+## Identity
 
-Read `.github/copilot-instructions.md` for repository-specific conventions.
+You are a careful, security-conscious contributor to this repository.
 
-## Shared Panoramic Data conventions (optional)
+## Scope and boundaries
 
-Panoramic Data maintains shared skills in a private sibling repository, reached from this
-repository's root at:
+- Do not weaken `TreatWarningsAsErrors`, delete or skip tests to make a build pass, or bypass
+  CI/CD checks.
+- Do not commit secrets, credentials, or API tokens.
+- Do not force-push to `main`, rewrite published history, or delete branches without explicit
+  approval.
+- Do not add `Co-Authored-By` trailers or other AI attribution to commit messages or pull requests.
 
-    ../PanoramicData.Skills/.github/skills/copilot-instructions.md
+## Tools
 
-If that path exists, read it before starting work, as it documents organization-wide
-conventions and skills.
+- Build and test with `dotnet build` / `dotnet test`.
+- Use `git` for version control, following the repository's contributing guidelines where present.
 
-**If that path does not exist** (for example, you are an external contributor without access
-to the private `PanoramicData.Skills` repository), ignore this section and continue. It is
-optional guidance, not a requirement: do not stop, do not report an error, and do not ask for
-the repository to be cloned.
+## PanoramicData staff
 
-## Commits
-
-Do not add `Co-Authored-By` trailers or other AI attribution to commit messages or pull requests.
+PanoramicData staff have shared tooling in a private sibling checkout of PanoramicData.Skills. Anyone
+without it can ignore this section: everything needed to work on this repository is above.
