@@ -1,4 +1,5 @@
-﻿using Divoom.Api.Interfaces;
+﻿using Divoom.Api.Exceptions;
+using Divoom.Api.Interfaces;
 using Divoom.Api.Models;
 using System;
 using System.Linq;
@@ -10,15 +11,21 @@ namespace Divoom.Api.Implementations;
 /// <summary>
 /// Reads and writes a device's settings.
 /// </summary>
-internal sealed class BluetoothSettingsCommands(DeviceConnection connection) : IBluetoothSettings
+internal sealed class BluetoothSettingsCommands(IDeviceTransport connection) : IBluetoothSettings
 {
-	private readonly DeviceConnection _connection = connection;
+	private readonly IDeviceTransport _connection = connection;
 
 	public async Task<DeviceSettings> GetSettingsAsync(
 	DivoomBluetoothDevice device,
 	CancellationToken cancellationToken)
 	{
 		var deviceResponse = await _connection.SendCommandAsync(device, cancellationToken, (byte)Command.GetSettings);
+
+		// An empty reply would otherwise parse as real settings (channel Clock, brightness 0)
+		if (!deviceResponse.Responses.Any(r => r.Bytes.Length > 0))
+		{
+			throw new DivoomNoResponseException("The device sent no reply to the GetSettings command.");
+		}
 
 		return new DeviceSettings(deviceResponse);
 	}
