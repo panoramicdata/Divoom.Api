@@ -19,7 +19,7 @@ namespace Divoom.Api.Implementations;
 /// from <see cref="BluetoothManager"/>'s command vocabulary, which changes for entirely
 /// different reasons.
 /// </remarks>
-internal sealed class DeviceConnection(DivoomClientOptions options)
+internal sealed class DeviceConnection(DivoomClientOptions options) : IDeviceTransport
 {
 	/// <summary>
 	/// How long a device is given to answer before its pending responses are read.

@@ -18,6 +18,7 @@ public interface IBluetoothSettings
 	/// </summary>
 	/// <param name="device">The device.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
+	/// <exception cref="Divoom.Api.Exceptions.DivoomNoResponseException">The device sent no reply.</exception>
 	Task<DeviceSettings> GetSettingsAsync(
 		DivoomBluetoothDevice device,
 		CancellationToken cancellationToken);

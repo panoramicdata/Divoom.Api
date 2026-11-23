@@ -48,3 +48,7 @@ Gratefully received:
 * Hints
 * Findings
 * Bluetooth logs
+
+## Breaking changes
+
+* `Bluetooth.Settings.GetSettingsAsync` now throws `DivoomNoResponseException` when the device sends no reply. It used to return settings with every field at its default (channel Clock, brightness 0), which looked like real state.
