@@ -17,24 +17,11 @@ public class DivoomAnimation
 	/// <param name="image">The image frame to add.</param>
 	public void AddFrame(DivoomImage image)
 	{
-		// AA LLLL TTTT RR NN COLOR_DATA PIXEL_DATA
-		var frameTime = image.FrameTimeMs;
-		var length = image.ImageSize + 6;
+		// A frame is already AA LLLL TTTT RR NN COLOR_DATA PIXEL_DATA, so it is appended as is
+		var frameBytes = image.GetImageBytes();
+		_frameBytes.AddRange(frameBytes);
 
-		// Frame start
-		_frameBytes.Add(0xAA);
-
-		// Frame length
-		_frameBytes.Add((byte)(length & 0xFF));
-		_frameBytes.Add((byte)((length >> 8) & 0xFF));
-
-
-		_frameBytes.Add((byte)(frameTime & 0xFF));
-		_frameBytes.Add((byte)((frameTime >> 8) & 0xFF));
-
-		_frameBytes.AddRange(image.GetImageBytes());
-
-		TotalFrameLength += length;
+		TotalFrameLength += frameBytes.Count;
 	}
 
 	internal List<byte> GetPacket(int packetIndex)
