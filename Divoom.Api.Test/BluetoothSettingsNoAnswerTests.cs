@@ -10,6 +10,17 @@ public class BluetoothSettingsNoAnswerTests
 	private static readonly DivoomBluetoothDevice Device = new(null!);
 
 	[Fact]
+	public async Task GetSettings_SendsTheGetSettingsCommand()
+	{
+		var transport = new StubTransport([]);
+		var settings = new BluetoothSettingsCommands(transport);
+
+		_ = await Assert.ThrowsAsync<DivoomNoResponseException>(() => settings.GetSettingsAsync(Device, CancellationToken.None));
+
+		transport.Sent.Should().Equal((byte)Command.GetSettings);
+	}
+
+	[Fact]
 	public async Task GetSettings_WithNoResponses_ThrowsNoResponse()
 	{
 		var settings = new BluetoothSettingsCommands(new StubTransport([]));
@@ -43,10 +54,17 @@ public class BluetoothSettingsNoAnswerTests
 
 	private sealed class StubTransport(List<DeviceResponse> responses) : IDeviceTransport
 	{
+		public List<byte> Sent { get; } = [];
+
 		public Task<DeviceResponseSet> SendCommandAsync(
 			DivoomBluetoothDevice device,
 			CancellationToken cancellationToken,
 			params byte[] commandBytes)
-			=> Task.FromResult(new DeviceResponseSet(responses));
+		{
+			ArgumentNullException.ThrowIfNull(device);
+			cancellationToken.ThrowIfCancellationRequested();
+			Sent.AddRange(commandBytes);
+			return Task.FromResult(new DeviceResponseSet(responses));
+		}
 	}
 }
